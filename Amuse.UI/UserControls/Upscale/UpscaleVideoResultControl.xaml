@@ -1,0 +1,142 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.UpscaleVideoResultControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             xmlns:models="clr-namespace:Amuse.UI.Models"
+             Name="UI" 
+             Focusable="True" 
+             VerticalContentAlignment="Center"
+             HorizontalContentAlignment="Center">
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="C" Command="{Binding CopyVideoCommand, ElementName=UI}" CommandParameter="{Binding Result, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveVideoCommand, ElementName=UI}" CommandParameter="{Binding Result, ElementName=UI}" />
+    </UserControl.InputBindings>
+    <Border DataContext="{Binding ElementName=UI}" BorderBrush="{StaticResource ControlBrightDefaultBorderBrush}" BorderThickness="2">
+        <DockPanel Margin="2">
+            <StackPanel DockPanel.Dock="Bottom">
+
+                <!--Information-->
+                <UniformGrid x:Name="ProgressContainer"  Height="35" Columns="3" Visibility="{Binding Result, Converter={StaticResource NullVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="15,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="Scale Factor:" Margin="0,0,5,0" FontStyle="Italic" Opacity=".6"/>
+                        <TextBlock Text="{Binding UpscaleInfo.ScaleFactor}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="Input:" Margin="0,0,5,0" FontStyle="Italic" Opacity=".6"/>
+                        <TextBlock Text="{Binding UpscaleInfo.InputWidth}" />
+                        <TextBlock Text="x" Margin="2,0,2,0"/>
+                        <TextBlock Text="{Binding UpscaleInfo.InputHeight}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,15,0" VerticalAlignment="Center">
+                        <TextBlock Text="Output:" Margin="0,0,5,0" FontStyle="Italic" Opacity=".6"/>
+                        <TextBlock Text="{Binding UpscaleInfo.OutputWidth}" />
+                        <TextBlock Text="x" Margin="2,0,2,0"/>
+                        <TextBlock Text="{Binding UpscaleInfo.OutputHeight}" />
+                    </StackPanel>
+                </UniformGrid>
+
+                <!--Progress-->
+                <Grid Height="35" Visibility="{Binding Result, Converter={StaticResource InverseNullVisibilityConverter}}">
+                    <userControls:ProgressElement Progress="{Binding Progress}" Margin="1, 5"/>
+                </Grid>
+
+
+                <!--Action Buttons-->
+                <DockPanel  Height="30" IsEnabled="{Binding Result, Converter={StaticResource NullBooleanConverter}}">
+                    <Button DockPanel.Dock="Right" Command="{Binding RemoveVideoCommand}" CommandParameter="{Binding Result}" Width="50" Style="{StaticResource DangerButtonStyle}" >
+                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light"  Color="{StaticResource DangerColour}"/>
+                    </Button>
+                    <Grid DockPanel.Dock="Right" HorizontalAlignment="Left" Visibility="{Binding Result, Converter={StaticResource NullVisibilityConverter}}">
+                        <StackPanel Margin="5,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Result.Video.Duration, FallbackValue=00:00:00, StringFormat={}mm\\:ss\\.ffff}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,-2,0,0">
+                                <TextBlock Text="{Binding Result.Video.Width, FallbackValue=0}" />
+                                <TextBlock Text=" x " Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
+                                <TextBlock Text="{Binding Result.Video.Height, FallbackValue=0}" />
+                                <TextBlock Text=" @ " FontSize="11" Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
+                                <TextBlock Text="{Binding Result.Video.FrameRate, FallbackValue=0}" />
+                                <TextBlock Text=" fps" FontSize="11" Opacity=".7" VerticalAlignment="Center" FontStyle="Italic"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                    <Button DockPanel.Dock="Left" Width="80" Style="{StaticResource InfoButtonStyle}" Command="{Binding SaveVideoCommand}" CommandParameter="{Binding Result}" ToolTip="Save Video File">
+                        <StackPanel Orientation="Horizontal">
+                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Color="{StaticResource InfoColour}" />
+                            <TextBlock Text="Save" Margin="8,0,0,0" Foreground="{StaticResource InfoColour}"/>
+                        </StackPanel>
+                    </Button>
+                    <UniformGrid DockPanel.Dock="Right" Columns="3" MinWidth="100">
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send to FrameToFrame">
+                            <userControls:FontAwesome Icon="&#xf008;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Video}" />
+                                    <Binding Source="{x:Static models:VideoSubmenuId.FrameToFrame}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}"  ToolTip="Send to Upscaler">
+                            <userControls:FontAwesome Icon="&#xf424;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Video}" />
+                                    <Binding Source="{x:Static models:VideoSubmenuId.Upscaler}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send to Feature Extractor">
+                            <userControls:FontAwesome Icon="&#xf302;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Video}" />
+                                    <Binding Source="{x:Static models:VideoSubmenuId.FeatureExtractor}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                    </UniformGrid>
+                </DockPanel>
+            </StackPanel>
+
+
+            <!--Result-->
+            <userControls:VideoElement 
+                x:Name="UpscaleVideoElement"
+                Original="{Binding Source.FileName}"
+                Source="{Binding Result.FileName}"
+                Preview="{Binding PreviewImage}"
+                IsSplitterEnabled="True"
+                SplitterDirection="LeftToRight"
+                SplitterPosition="Source"
+                SplitterVisibility="Auto"
+                VideoSync="{Binding VideoSync}">
+
+                <!--Context Menu-->
+                <userControls:VideoElement.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Upscale Menu" IsEnabled="False"  Margin="0,0,0,4" FontSize="13" FontWeight="DemiBold"/>
+                        <Separator Margin="0,0,0,5"/>
+                        <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyVideoCommand}" CommandParameter="{Binding Result}" IsEnabled="{Binding Result, Converter={StaticResource NullBooleanConverter}}" >
+                            <MenuItem.Icon>
+                                <userControls:FontAwesome Icon="&#xf0c5;" IconStyle="Light" Size="15" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Save" InputGestureText="Ctrl+S" Command="{Binding SaveVideoCommand}" CommandParameter="{Binding Result}" IsEnabled="{Binding Result, Converter={StaticResource NullBooleanConverter}}" >
+                            <MenuItem.Icon>
+                                <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Size="15"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </userControls:VideoElement.ContextMenu>
+            </userControls:VideoElement>
+
+        </DockPanel>
+    </Border>
+</UserControl>

@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.SliderElement"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             Name="SliderElementUI">
+    <DockPanel DataContext="{Binding ElementName=SliderElementUI}">
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,0">
+            <TextBlock 
+                Margin="0,0,0,0"
+                Style="{StaticResource FieldTextBlockStyle}" 
+                Text="{Binding Text}"  
+                FontSize="{Binding FontSize}" 
+                HorizontalAlignment="Left" 
+                VerticalAlignment="Top"/>
+            <TextBlock 
+                Style="{StaticResource FieldTextBlockStyle}" 
+                Text="{Binding ValueText}" 
+                FontSize="{Binding ValueFontSize}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Margin="0,0,6,0"
+                FontWeight="Medium" />
+        </Grid>
+        <Slider 
+            Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+            Minimum="{Binding Minimum}" 
+            Maximum="{Binding Maximum}" 
+            TickFrequency="{Binding TickFrequency}" 
+            SmallChange="{Binding TickFrequency}" 
+            LargeChange="{Binding TickFrequency}" 
+            IsSnapToTickEnabled="True" 
+            ValueChanged="Slider_ValueChanged">
+            <i:Interaction.Behaviors>
+                <behaviors:SliderMouseWheelBehavior />
+            </i:Interaction.Behaviors>
+        </Slider>
+    </DockPanel>
+</UserControl>

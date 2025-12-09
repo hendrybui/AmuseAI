@@ -1,0 +1,90 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.VideoElement"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:effects="clr-namespace:Amuse.UI.Effects"
+             Name="VideoElementUI"
+             HorizontalAlignment="Center"
+             VerticalContentAlignment="Center"
+             HorizontalContentAlignment="Center">
+    <DockPanel DataContext="{Binding ElementName=VideoElementUI}">
+
+        <!--Progress-->
+        <Grid DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+            <ProgressBar 
+                Height="5"
+                Foreground="#20FFFFFF"
+                Value="{Binding VideoPosition}" 
+                Maximum="{Binding VideoLength}" 
+                Visibility="{Binding Preview, Converter={StaticResource InverseNullHiddenConverter}}" 
+                Width="{Binding ActualWidth, ElementName=VideoSourceControl}"/>
+        </Grid>
+
+        <!--Content-->
+        <Grid >
+            <Grid x:Name="SourceContainer" >
+                <!--PlaceHolder-->
+                <Image Source="{StaticResource PlaceholderImage}" Visibility="{Binding Source, Converter={StaticResource InverseNullHiddenConverter}}" Stretch="Uniform" Opacity="0.2" />
+
+                <!--Video-->
+                <Grid >
+
+                    <!--Original-->
+                    <Grid Visibility="{Binding IsSplitterEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <MediaElement
+                            x:Name="VideoOriginalControl"
+                            Volume="0"
+                            Source="{Binding Original}"
+                            Stretch="Uniform" 
+                            LoadedBehavior="Manual" 
+                            UnloadedBehavior="Close"
+                            MouseLeftButtonDown="MediaElement_MouseDown" 
+                            Visibility="{Binding Source, Converter={StaticResource NullVisibilityConverter}}">
+                        </MediaElement>
+                    </Grid>
+
+                    <!--Source-->
+                    <MediaElement
+                        x:Name="VideoSourceControl"
+                        Volume="0"
+                        Source="{Binding Source}"
+                        Stretch="Uniform" 
+                        LoadedBehavior="Manual" 
+                        UnloadedBehavior="Close" 
+                        Loaded="MediaElement_Loaded"
+                        MediaOpened="MediaElement_MediaOpened" 
+                        MediaEnded="MediaElement_MediaEnded" 
+                        MouseLeftButtonDown="MediaElement_MouseDown" >
+                    </MediaElement>
+
+                    <Grid.Effect>
+                        <effects:DeeperColorEffect  />
+                    </Grid.Effect>
+                </Grid>
+
+                <!--PreviewImage-->
+                <Image Source="{Binding Preview}" Stretch="Uniform" Visibility="{Binding Preview, Converter={StaticResource NullVisibilityConverter}}" />
+            </Grid>
+
+            <!--Splitter-->
+            <Grid Visibility="{Binding IsSplitterEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                <Grid x:Name="GridSplitterContainer" MaxWidth="{Binding ActualWidth, ElementName=VideoSourceControl}" ClipToBounds="True" Visibility="Hidden" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition x:Name="GridSplitterColumn" MaxWidth="{Binding ActualWidth, ElementName=VideoSourceControl}"/>
+                        <ColumnDefinition Width="30" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid x:Name="GridSplitterControl" Grid.Column="0" SizeChanged="GridSplitter_SizeChanged"/>
+                    <GridSplitter Grid.Column="1"  Margin="-15,0,15,0"  Width="30" HorizontalAlignment="Stretch" Background="Transparent" Cursor="ScrollWE" Style="{x:Null}" />
+                    <Border Grid.Column="1" Margin="-15,0,15,0" BorderBrush="{Binding SplitterColor}" BorderThickness="1,0,1,0" Width="1" IsHitTestVisible="False" HorizontalAlignment="Center"  />
+                    <Grid Grid.Column="1" Margin="-15,0,15,0"  HorizontalAlignment="Center" VerticalAlignment="Center" ClipToBounds="False" Opacity="1" IsHitTestVisible="False" >
+                        <Ellipse  Width="30" Height="30" Stroke="{Binding SplitterColor}" Fill="{Binding SplitterColor}" StrokeThickness="2" />
+                        <TextBlock Text="&lt; &gt;" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,3" Foreground="{Binding Foreground}" FontWeight="Bold" FontSize="16"  />
+                    </Grid>
+                </Grid>
+            </Grid>
+
+        </Grid>
+    </DockPanel>
+</UserControl>

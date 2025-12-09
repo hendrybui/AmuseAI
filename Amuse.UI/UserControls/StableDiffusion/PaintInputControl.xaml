@@ -1,0 +1,262 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.PaintInputControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:colorPicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+             xmlns:local="clr-namespace:Amuse.UI.UserControls"
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             mc:Ignorable="d" 
+             d:DesignWidth="500" 
+             Name="UI" 
+             Focusable="True"
+             AllowDrop="True">
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="O" Command="{Binding LoadCanvasCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="C" Command="{Binding CopyCanvasCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="V" Command="{Binding PasteCanvasCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveCanvasCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding UndoCanvasCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding RedoCanvasCommand, ElementName=UI}" />
+    </UserControl.InputBindings>
+    <Border DataContext="{Binding ElementName=UI}" BorderBrush="{StaticResource ControlBrightDefaultBorderBrush}" BorderThickness="2" >
+
+        <DockPanel Margin="2">
+
+            <StackPanel DockPanel.Dock="Bottom" >
+                <UniformGrid Columns="2" Height="30" Margin="1">
+                    <DockPanel >
+
+                        <!--ColorPicker-->
+                        <colorPicker:PortableColorPicker  
+                            DockPanel.Dock="Right"
+                            Width="60"
+                            Margin="0,3,2,3"
+                            SelectedColor="{Binding SelectedColor, Mode=TwoWay}" 
+                            IsPickerOpen="{Binding IsPickerOpen, Mode=OneWayToSource}"  
+                            Background="{StaticResource ContainerBackground}" />
+
+                        <!--Recent Colors-->
+                        <ListBox ItemsSource="{Binding RecentColors}" SelectedValue="{Binding SelectedColor, Mode=TwoWay}" Background="Transparent" BorderBrush="Transparent" SnapsToDevicePixels="True">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+
+                                    <Setter Property="Background" Value="{Binding ., Converter={StaticResource ColorToBrushConverter}}" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                <Border BorderThickness="1" >
+                                                    <Border Background="{TemplateBinding Background}">
+                                                        <GridViewRowPresenter HorizontalAlignment="Stretch" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Margin="0" Content="{TemplateBinding Content}"/>
+                                                    </Border>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanvasDrawingTool, ElementName=UI}" Value="Highlight">
+                                            <Setter Property="Opacity" Value=".6" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="2" Columns="8" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
+
+                       
+
+                    </DockPanel>
+
+
+                    <UniformGrid Columns="5">
+
+                        <!--Paint Brush-->
+                        <Button Command="{Binding SelectToolCommand}" CommandParameter="{x:Static local:DrawingTool.Brush}">
+                            <userControls:FontAwesome Icon="&#xf1fc;" IconStyle="Light"  >
+                                <userControls:FontAwesome.Style>
+                                    <Style TargetType="{x:Type userControls:FontAwesome}" >
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Color" Value="{StaticResource ButtonForeground}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CanvasDrawingTool, ElementName=UI}" Value="Brush" >
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="Color" Value="{StaticResource ControlPrimaryColourBackground}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </userControls:FontAwesome.Style>
+                            </userControls:FontAwesome>
+                            <Button.Style>
+                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}" >
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource ControlPrimaryColourBackground}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanvasDrawingTool, ElementName=UI}" Value="Brush" >
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <!--Highlighter-->
+                        <Button Command="{Binding SelectToolCommand}" CommandParameter="{x:Static local:DrawingTool.Highlight}">
+                            <userControls:FontAwesome Icon="&#xf591;" IconStyle="Light"  >
+                                <userControls:FontAwesome.Style>
+                                    <Style TargetType="{x:Type userControls:FontAwesome}" >
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Color" Value="{StaticResource ButtonForeground}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CanvasDrawingTool, ElementName=UI}" Value="Highlight" >
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="Color" Value="{StaticResource ControlPrimaryColourBackground}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </userControls:FontAwesome.Style>
+                            </userControls:FontAwesome>
+                            <Button.Style>
+                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}" >
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource ControlPrimaryColourBackground}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanvasDrawingTool, ElementName=UI}" Value="Highlight" >
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+
+                        <!--Eraser-->
+                        <Button Command="{Binding SelectToolCommand}" CommandParameter="{x:Static local:DrawingTool.Eraser}">
+                            <userControls:FontAwesome Icon="&#xf12d;" IconStyle="Light"  >
+                                <userControls:FontAwesome.Style>
+                                    <Style TargetType="{x:Type userControls:FontAwesome}" >
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Color" Value="{StaticResource ButtonForeground}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CanvasDrawingTool, ElementName=UI}" Value="Eraser" >
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="Color" Value="{StaticResource ControlPrimaryColourBackground}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </userControls:FontAwesome.Style>
+                            </userControls:FontAwesome>
+                            <Button.Style>
+                                <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}" >
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="BorderBrush" Value="{StaticResource ControlPrimaryColourBackground}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CanvasDrawingTool, ElementName=UI}" Value="Eraser" >
+                                            <Setter Property="BorderThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+
+                        <!--Fill-->
+                        <Button Command="{Binding FillCanvasCommand}">
+                            <userControls:FontAwesome Icon="&#xf576;" IconStyle="Light"  />
+                        </Button>
+
+                        <!--Clear-->
+                        <Button Command="{Binding ClearCanvasCommand}" Style="{StaticResource DangerButtonStyle}">
+                            <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"  />
+                        </Button>
+                    </UniformGrid>
+
+                </UniformGrid>
+
+                <UniformGrid Columns="3"  Height="30" Margin="1">
+
+                    <!--Load Image-->
+                    <Button HorizontalAlignment="Left" Command="{Binding LoadCanvasCommand}" ToolTip="Load Image File" Height="30" Width="100" Style="{StaticResource InfoButtonStyle}" >
+                        <StackPanel Orientation="Horizontal">
+                            <userControls:FontAwesome Icon="&#xf0ee;" IconStyle="Light" Color="{StaticResource InfoColour}" />
+                            <TextBlock Text="Load" Margin="5,0,0,0" Foreground="{StaticResource InfoColour}"/>
+                        </StackPanel>
+                    </Button>
+
+
+                    <StackPanel>
+                    </StackPanel>
+
+                    <!--Tool Size-->
+                    <userControls:SliderElement 
+                        Text="Tool Size" 
+                        Minimum="1" 
+                        Maximum="100" 
+                        TickFrequency="1" 
+                        FontSize="8" 
+                        ValueFontSize="8"
+                        Margin="0,0,0,0" 
+                        Value="{Binding DrawingToolSize}" />
+                </UniformGrid>
+            </StackPanel>
+
+            <Viewbox StretchDirection="{Binding ZoomDirection}" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="Fant">
+                <Grid Width="{Binding SchedulerOptions.Width}" Height="{Binding SchedulerOptions.Height}" >
+                    <InkCanvas x:Name="PaintCanvas"  
+                        Background="White"
+                        ForceCursor="True" 
+                        Cursor="Pen" 
+                        PreviewMouseLeftButtonUp="PaintCanvas_MouseLeftButtonUp"
+                        PreviewMouseLeftButtonDown="PaintCanvas_MouseLeftButtonDown"
+                        PreviewMouseMove="PaintCanvas_PreviewMouseMove"
+                        PreviewMouseWheel="PaintCanvas_OnMouseWheel"
+                        EditingMode="{Binding CanvasEditingMode}" 
+                        Width="{Binding SchedulerOptions.Width}" 
+                        Height="{Binding SchedulerOptions.Height}" 
+                        DefaultDrawingAttributes="{Binding BrushAttributes}" />
+                    <Grid.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Open" InputGestureText="Ctrl+O" Command="{Binding LoadCanvasCommand}" >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf1c5;" IconStyle="Light" Size="15" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyCanvasCommand}" >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf0c5;" IconStyle="Light" Size="15" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Paste" InputGestureText="Ctrl+V" Command="{Binding PasteCanvasCommand}" >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf0ea;" IconStyle="Light" Size="15" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Save" InputGestureText="Ctrl+S" Command="{Binding SaveCanvasCommand}" >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Size="15" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Undo" InputGestureText="Ctrl+Z" Command="{Binding UndoCanvasCommand}"  >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf2ea;" IconStyle="Light" Size="15" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Header="Redo" InputGestureText="Ctrl+Y" Command="{Binding RedoCanvasCommand}"  >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf2f9;" IconStyle="Light" Size="15" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Grid.ContextMenu>
+                </Grid>
+            </Viewbox>
+          
+        </DockPanel>
+  
+    </Border>
+</UserControl>

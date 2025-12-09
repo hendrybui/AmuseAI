@@ -1,0 +1,73 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.UpscalePickerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Amuse.UI.UserControls"
+             mc:Ignorable="d" 
+             d:DesignWidth="500" Name="UI">
+    <DockPanel DataContext="{Binding ElementName=UI}">
+        <TextBlock DockPanel.Dock="Top" Text="Model Selector" Style="{StaticResource FieldTextBlockStyle}"/>
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Visibility="{Binding SelectedModel, Converter={StaticResource NullVisibilityConverter}}">
+                <Button BorderThickness="0,1,1,1" ToolTip="Load Model" Width="80"
+                    Command="{Binding LoadCommand}" 
+                    Visibility="{Binding SelectedModel.IsLoaded, FallbackValue=Visible, TargetNullValue=Visible, Converter={StaticResource InverseBooleanToVisibilityConverter}}" 
+                    IsEnabled="{Binding SelectedModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <local:FontAwesome Icon="&#xf110;" IsSpinner="True" Size="12" Margin="0,0,4,0" Width="12" Height="12" Visibility="{Binding SelectedModel.IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
+                         </local:FontAwesome>
+                        <TextBlock Text="Load"/>
+                    </StackPanel>
+                </Button>
+                <Button BorderThickness="0,1,1,1" ToolTip="Unload Model" Width="80"
+                    Command="{Binding UnloadCommand}" 
+                    Visibility="{Binding SelectedModel.IsLoaded, FallbackValue=Collapsed, TargetNullValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    IsEnabled="{Binding SelectedModel.IsLoading, Converter={StaticResource InverseBoolConverter}}">
+                    <TextBlock Text="Unload"/>
+                </Button>
+            </StackPanel>
+
+            <Grid Height="36">
+                <ComboBox 
+                    HorizontalContentAlignment="Stretch"
+                    ItemsSource="{Binding Settings.UpscaleModelSets}" 
+                    SelectedItem="{Binding SelectedModel}" 
+                    IsEnabled="{Binding SelectedModel.IsLoading, FallbackValue=True, TargetNullValue=True, Converter={StaticResource InverseBoolConverter}}" >
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <Ellipse DockPanel.Dock="Right" Width="10" Height="10" >
+                                    <Ellipse.Style>
+                                        <Style TargetType="{x:Type Ellipse}">
+                                            <Setter Property="Fill" Value="{StaticResource ControlDisabledBorderBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=IsLoaded}" Value="True">
+                                                    <Setter Property="Fill" Value="{StaticResource AccentColour2}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="ScaleFactor: " FontSize="10" Opacity=".6" />
+                                        <TextBlock Text="{Binding ModelSet.ScaleFactor}" FontSize="10" Opacity=".6" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                </ComboBox>
+                <TextBlock Text="-- Select Model --" Visibility="{Binding SelectedModel, Converter={StaticResource InverseNullVisibilityConverter}}" IsHitTestVisible="False" Margin="3,2" FontStyle="Italic" Opacity=".7" VerticalAlignment="Center" />
+            </Grid>
+        </DockPanel>
+    </DockPanel>
+
+</UserControl>

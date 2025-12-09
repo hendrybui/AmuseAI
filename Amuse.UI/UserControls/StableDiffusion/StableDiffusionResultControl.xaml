@@ -1,0 +1,163 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.StableDiffusionResultControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             xmlns:models="clr-namespace:Amuse.UI.Models"
+             xmlns:views="clr-namespace:Amuse.UI.Views"
+             Name="UI" 
+             Focusable="True">
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="C" Command="{Binding CopyImageCommand, ElementName=UI}" CommandParameter="{Binding Result, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveImageCommand, ElementName=UI}" CommandParameter="{Binding Result, ElementName=UI}" />
+    </UserControl.InputBindings>
+    <Border DataContext="{Binding ElementName=UI}" BorderBrush="{StaticResource ControlBrightDefaultBorderBrush}" BorderThickness="2" >
+        <DockPanel Margin="2">
+            <StackPanel DockPanel.Dock="Bottom" >
+
+                <!--Progress-->
+                <Grid Height="35" Visibility="{Binding Result, Converter={StaticResource InverseNullVisibilityConverter}}" >
+                    <userControls:ProgressElement Progress="{Binding Progress}" Margin="1, 5"/>
+                </Grid>
+
+                <!--Information-->
+                <UniformGrid Height="33" Margin="0,2,0,0" Columns="5"  Visibility="{Binding Result, Converter={StaticResource NullVisibilityConverter}}">
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Result.SchedulerOptions.SchedulerType}"  TextAlignment="Center"/>
+                        <TextBlock Text="Scheduler" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Result.SchedulerOptions.InferenceSteps}"  TextAlignment="Center"/>
+                        <TextBlock Text="Steps" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <Button  Padding="3,0" BorderThickness="0,0,0,0" BorderBrush="{StaticResource InfoColour}" ToolTip="Set as current seed" Command="{Binding UpdateSeedCommand}" CommandParameter="{Binding Result.SchedulerOptions.Seed}">
+                            <TextBlock Text="{Binding Result.SchedulerOptions.Seed}" Foreground="{StaticResource InfoColour}"  />
+                        </Button>
+                        <TextBlock Text="Seed" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Result.SchedulerOptions.GuidanceScale, StringFormat={}{0:F2}}" TextAlignment="Center"/>
+                        <TextBlock Text="Guidance" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Result.Image.PixelWidth}"  TextAlignment="Center"/>
+                            <TextBlock Text=" x " FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                            <TextBlock Text="{Binding Result.Image.PixelHeight}"  TextAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="Size" FontSize="10" Opacity=".6" FontStyle="Italic" TextAlignment="Center"/>
+                    </StackPanel>
+                </UniformGrid>
+
+                <!--Action Buttons-->
+                <DockPanel Height="30" IsEnabled="{Binding Result, Converter={StaticResource NullBooleanConverter}}" Margin="1">
+                    <Button Width="100" DockPanel.Dock="Left" Style="{StaticResource InfoButtonStyle}" Command="{Binding SaveImageCommand}" CommandParameter="{Binding Result}" ToolTip="Save Image File">
+                        <StackPanel Orientation="Horizontal">
+                            <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light"  Color="{StaticResource InfoColour}" />
+                            <TextBlock Text="Save" Margin="8,0,0,0" Foreground="{StaticResource InfoColour}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button DockPanel.Dock="Right" Width="50" Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=RemoveImageCommand}" CommandParameter="{Binding Result}" ToolTip="Clear Image Result" BorderThickness="1" Style="{StaticResource DangerButtonStyle}">
+                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}" />
+                    </Button>
+                    <UniformGrid Columns="6"  >
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send To Text To Image">
+                            <userControls:FontAwesome Icon="&#xf036;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Image}" />
+                                    <Binding Source="{x:Static models:ImageSubmenuId.TextToImage}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send To Image To Image">
+                            <userControls:FontAwesome Icon="&#xf03e;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Image}" />
+                                    <Binding Source="{x:Static models:ImageSubmenuId.ImageToImage}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send To Image Inpaint">
+                            <userControls:FontAwesome Icon="&#xf044;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Image}" />
+                                    <Binding Source="{x:Static models:ImageSubmenuId.ImageInpaint}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send To ImageToVideo">
+                            <userControls:FontAwesome Icon="&#xf008;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Video}" />
+                                    <Binding Source="{x:Static models:VideoSubmenuId.ImageToVideo}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send To Upscaler" >
+                            <userControls:FontAwesome Icon="&#xf424;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Image}" />
+                                    <Binding Source="{x:Static models:ImageSubmenuId.Upscaler}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type Window}}, Path=NavigateCommand}" ToolTip="Send To FeatureExtractor" >
+                            <userControls:FontAwesome Icon="&#xf302;" IconStyle="Light" />
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource NavigationConverter}">
+                                    <Binding Source="{x:Static models:MenuId.Image}" />
+                                    <Binding Source="{x:Static models:ImageSubmenuId.FeatureExtractor}" />
+                                    <Binding Path="Result"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                    </UniformGrid>
+                </DockPanel>
+
+            </StackPanel>
+
+            <!--Result-->
+            <userControls:ImageElement 
+                    Original="{Binding Source.Image}" 
+                    Source="{Binding Result.Image}"
+                    Preview="{Binding PreviewImage}"
+                    IsSplitterEnabled="{Binding IsSplitterEnabled}"
+                    SplitterDirection="LeftToRight"
+                    SplitterPosition="Source"
+                    SplitterVisibility="Auto">
+
+                <!--ContextMenu-->
+                <userControls:ImageElement.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Image Menu" IsEnabled="False"  Margin="0,0,0,4" FontSize="13" FontWeight="DemiBold"/>
+                        <Separator Margin="0,0,0,5"/>
+                        <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyImageCommand}" CommandParameter="{Binding Result}" IsEnabled="{Binding Result, Converter={StaticResource NullBooleanConverter}}" >
+                            <MenuItem.Icon>
+                                <userControls:FontAwesome Icon="&#xf0c5;" IconStyle="Light" Size="15" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Save" InputGestureText="Ctrl+S" Command="{Binding SaveImageCommand}" CommandParameter="{Binding Result}" IsEnabled="{Binding Result, Converter={StaticResource NullBooleanConverter}}" >
+                            <MenuItem.Icon>
+                                <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Size="15"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </userControls:ImageElement.ContextMenu>
+            </userControls:ImageElement>
+
+        </DockPanel>
+    </Border>
+</UserControl>

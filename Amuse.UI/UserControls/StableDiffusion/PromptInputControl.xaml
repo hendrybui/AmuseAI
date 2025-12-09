@@ -1,0 +1,248 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.PromptInputControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             xmlns:models="clr-namespace:Amuse.UI.Models"
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             mc:Ignorable="d" 
+             d:DesignWidth="350"
+             d:DesignHeight="500"
+             Name="UI">
+    <DockPanel DataContext="{Binding ElementName=UI}" >
+
+        <!--Prompt-->
+        <UniformGrid>
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <TextBlock Text="Tokens: " Style="{StaticResource FieldTextBlockStyle}" FontSize="9" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding PromptTokenCount}">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource FieldTextBlockStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PromptLimitExceded, ElementName=UI}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource WarningColour}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="/" Margin="2,3,1,1" FontSize="8" Opacity=".6" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding PromptTokenLimit}" >
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource FieldTextBlockStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding PromptTokenLimit, ElementName=UI}" Value="0">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding PromptLimitExceded, ElementName=UI}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource WarningColour}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel.Style>
+                            <Style TargetType="{x:Type StackPanel}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PromptTokenLimit, ElementName=UI}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                    </StackPanel>
+                    <TextBlock  Style="{StaticResource FieldTextBlockStyle}" Visibility="{Binding LabelVisibility}">Prompt</TextBlock>
+                </DockPanel>
+                <Grid>
+                    <TextBox Text="{Binding PromptOptions.Prompt, UpdateSourceTrigger=PropertyChanged, NotifyOnTargetUpdated=True}" behaviors:ShiftEnterBehavior.Enable="True" TextWrapping="Wrap" TextChanged="Prompt_TextChanged">
+                        <TextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="ApplicationCommands.Cut" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0c4;" IconStyle="Light" Size="16" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="ApplicationCommands.Copy" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0c5;" IconStyle="Light" Size="16" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Command="ApplicationCommands.Paste" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0ea;" IconStyle="Light" Size="16" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator Margin="0,5"/>
+                                <MenuItem 
+                                   Header="Prompts" 
+                                   ItemsSource="{Binding PromptCollectionView}" 
+                                   ItemTemplate="{StaticResource ContextMenuSubItemDataTemplate}"
+                                   ItemContainerStyle="{StaticResource ContextMenuSubItem}"
+                                   Command="{Binding AppendPromptCommand}">
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf075;" IconStyle="Light" Size="16"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem 
+                                    Header="Snippits" 
+                                    ItemsSource="{Binding PromptSnippitCollectionView}" 
+                                    ItemTemplate="{StaticResource ContextMenuSubItemDataTemplate}"
+                                    ItemContainerStyle="{StaticResource ContextMenuSubItem}" 
+                                    Command="{Binding AppendPromptCommand}">
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf70e;" IconStyle="Light" Size="13" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                   Header="Save Prompt" 
+                                   Command="{Binding SavePromptCommand}" >
+                                    <MenuItem.CommandParameter>
+                                        <models:PromptInputType>Positive</models:PromptInputType>
+                                    </MenuItem.CommandParameter>
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Size="16" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </TextBox.ContextMenu>
+                        <TextBox.Style>
+                            <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PromptLimitExceded, ElementName=UI}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource WarningColour}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                    <TextBlock Text="Please enter a prompt." FontStyle="Italic" Opacity=".6" Margin="4,3,0,0" IsHitTestVisible="False" Visibility="{Binding PromptOptions.Prompt, Converter={StaticResource InverseNullOrEmptyVisibilityConverter}}" />
+                </Grid>
+
+
+            </DockPanel>
+            <DockPanel Visibility="{Binding IsNegativePromptSupported, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <DockPanel DockPanel.Dock="Top">
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                        <TextBlock Text="Tokens: " Style="{StaticResource FieldTextBlockStyle}" FontSize="9" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding NegativePromptTokenCount}">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource FieldTextBlockStyle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NegativePromptLimitExceded, ElementName=UI}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource WarningColour}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <TextBlock Text="/" Margin="2,3,1,1" FontSize="8" Opacity=".6" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding PromptTokenLimit}" >
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource FieldTextBlockStyle}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NegativePromptLimitExceded, ElementName=UI}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource WarningColour}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                        <StackPanel.Style>
+                            <Style TargetType="{x:Type StackPanel}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding PromptTokenLimit, ElementName=UI}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+                    </StackPanel>
+                    <TextBlock  Style="{StaticResource FieldTextBlockStyle}" Visibility="{Binding LabelVisibility}">Negative Prompt</TextBlock>
+                </DockPanel>
+                <TextBox Text="{Binding PromptOptions.NegativePrompt, UpdateSourceTrigger=PropertyChanged, NotifyOnTargetUpdated=True}" behaviors:ShiftEnterBehavior.Enable="True" TextWrapping="Wrap" TextChanged="NegativePrompt_TextChanged">
+                    <TextBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Command="ApplicationCommands.Cut" >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf0c4;" IconStyle="Light" Size="16" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="ApplicationCommands.Copy" >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf0c5;" IconStyle="Light" Size="16" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem Command="ApplicationCommands.Paste" >
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf0ea;" IconStyle="Light" Size="16" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <Separator Margin="0,5"/>
+                            <MenuItem 
+                                Header="Negative Prompts" 
+                                ItemsSource="{Binding PromptNegativeCollectionView}" 
+                                ItemTemplate="{StaticResource ContextMenuSubItemDataTemplate}"
+                                ItemContainerStyle="{StaticResource ContextMenuSubItem}" 
+                                Command="{Binding AppendPromptNegativeCommand}">
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf4b3;" IconStyle="Light" Size="16" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem 
+                                Header="Snippits" 
+                                ItemsSource="{Binding PromptSnippitCollectionView}" 
+                                ItemTemplate="{StaticResource ContextMenuSubItemDataTemplate}"
+                                ItemContainerStyle="{StaticResource ContextMenuSubItem}" 
+                                Command="{Binding AppendPromptNegativeCommand}">
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf70e;" IconStyle="Light" Size="13" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem
+                                 Header="Save Prompt" 
+                                 Command="{Binding SavePromptCommand}" >
+                                <MenuItem.CommandParameter>
+                                    <models:PromptInputType>Negative</models:PromptInputType>
+                                </MenuItem.CommandParameter>
+                                <MenuItem.Icon>
+                                    <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Size="16" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </TextBox.ContextMenu>
+                    <TextBox.Style>
+                        <Style TargetType="{x:Type TextBox}" BasedOn="{StaticResource {x:Type TextBox}}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding NegativePromptLimitExceded, ElementName=UI}" Value="True">
+                                    <Setter Property="Foreground" Value="{StaticResource WarningColour}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+            </DockPanel>
+            <UniformGrid.Style>
+                <Style TargetType="{x:Type UniformGrid}">
+                    <Setter Property="Rows" Value="2" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsNegativePromptSupported, ElementName=UI}" Value="False">
+                            <Setter Property="Rows" Value="1" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </UniformGrid.Style>
+
+        </UniformGrid>
+
+    </DockPanel>
+</UserControl>

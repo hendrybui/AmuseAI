@@ -1,0 +1,40 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.DevicePickerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" Name="UI">
+    <DockPanel DataContext="{Binding ElementName=UI}">
+        <ComboBox ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding Provider}" Style="{StaticResource FieldTextBlockStyle}" Margin="10,1,0,0" HorizontalAlignment="Right" />
+                        <StackPanel Orientation="Horizontal" >
+                            <TextBlock Margin="0,1,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource FieldTextBlockStyle}">
+                                        <Setter Property="Text" Value="GPU: " />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DeviceType}" Value="CPU">
+                                                <Setter Property="Text" Value="CPU: " />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text="{Binding MemoryGB, StringFormat={}(0GB)}" Margin="5,0"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+            <ComboBox.ItemContainerStyle>
+                <Style TargetType="{x:Type ComboBoxItem}">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ComboBox.ItemContainerStyle>
+        </ComboBox>
+    </DockPanel>
+</UserControl>

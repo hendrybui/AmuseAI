@@ -1,0 +1,503 @@
+﻿using Amuse.UI.Commands;
+using Amuse.UI.Dialogs;
+using Amuse.UI.Enums;
+using Amuse.UI.Exceptions;
+using Amuse.UI.Helpers;
+using Amuse.UI.Models;
+using Amuse.UI.Services;
+using Amuse.UI.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OnnxStack.Core;
+using OnnxStack.Core.Config;
+using OnnxStack.Core.Video;
+using OnnxStack.Device.Services;
+using Serilog;
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Threading;
+
+namespace Amuse.UI
+{
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
+    public partial class App : Application, INotifyPropertyChanged
+    {
+        private static readonly string _version = Utils.GetAppVersion();
+        private static readonly string _displayVersion = Utils.GetDisplayVersion();
+
+        private static IHost _applicationHost;
+        private static Mutex _applicationMutex;
+        private static string _baseDirectory;
+        private static string _dataDirectory;
+        private static string _tempDirectory;
+        private static string _cacheDirectory;
+        private static string _pluginsDirectory;
+        private static string _logDirectory;
+
+        private readonly ILogger<App> _logger;
+        private readonly Splashscreen _splashscreen = new();
+        private UIModeType _selectedUIMode;
+        private bool _isGenerating;
+        private bool _isUpdateAvailable;
+        private AmuseSettings _amuseSettings;
+        private IFileService _fileService;
+        private IDialogService _dialogService;
+        private IHardwareService _hardwareService;
+        private readonly CancellationTokenSource _cancellationTokenSource;
+
+        public App()
+        {
+            _applicationMutex = new Mutex(false, "Global\\TensorStack_Amuse", out bool isNewInstance);
+            if (!isNewInstance)
+            {
+                ActivateExistingInstance();
+                Environment.Exit(0);
+                return;
+            }
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            _baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            _pluginsDirectory = Path.Combine(_baseDirectory, "Plugins");
+            _dataDirectory = GetApplicationDataDirectory();
+            _tempDirectory = Path.Combine(_dataDirectory, "Temp");
+            _cacheDirectory = Path.Combine(_dataDirectory, "Cache");
+            _logDirectory = Path.Combine(_dataDirectory, "Logs");
+
+            var settings = SettingsManager.LoadSettings();
+            ConfigManager.SetConfiguration(_dataDirectory);
+
+            Initialize(settings);
+            _logger = GetService<ILogger<App>>();
+            UpdateCommand = new AsyncRelayCommand(UpdateAsync);
+            SwitchModeCommand = new AsyncRelayCommand<UIModeType>(SwitchModeAsync);
+            DispatcherUnhandledException += Application_DispatcherUnhandledException;
+            AppDomain.CurrentDomain.UnhandledException += AppDomain_UnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+        }
+
+        public static string Version => _version;
+        public static string DisplayVersion => _displayVersion;
+        public static string BaseDirectory => _baseDirectory;
+        public static string DataDirectory => _dataDirectory;
+        public static string PluginDirectory => _pluginsDirectory;
+        public static string TempDirectory => _tempDirectory;
+        public static string CacheDirectory => _cacheDirectory;
+        public static string LogDirectory => _logDirectory;
+
+        /// <summary>
+        /// Gets the application data directory, if Installer build use LocalApplicationData, else just executable directory
+        /// </summary>
+        /// <returns></returns>
+        public static string GetApplicationDataDirectory()
+        {
+            return _baseDirectory;
+        }
+
+        public static BaseWindow CurrentWindow => Current.MainWindow as BaseWindow;
+        public static T GetService<T>() => _applicationHost.Services.GetService<T>();
+        public static void UIInvoke(Action action, DispatcherPriority priority = DispatcherPriority.Normal) => Current.Dispatcher.BeginInvoke(priority, action);
+        public static DispatcherOperation UIInvokeAsync(Func<Task> value, DispatcherPriority priority = DispatcherPriority.Normal) => Current.Dispatcher.InvokeAsync(value, priority);
+
+        public static async Task<T> UIInvokeAsync<T>(Func<Task<T>> function, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            return await await Current.Dispatcher.InvokeAsync(function);
+        }
+
+
+        private static void Initialize(AmuseSettings amuseSettings)
+        {
+            var builder = Host.CreateApplicationBuilder();
+
+            // Add Logging
+            builder.Logging.ClearProviders();
+            builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
+                .ReadFrom.Configuration(builder.Configuration)
+                .MinimumLevel.Verbose()
+                .Enrich.FromLogContext()
+                .WriteTo.File(GetLogId(), rollOnFileSizeLimit: true));
+
+            // Add OnnxStack
+            builder.Services.AddOnnxStack();
+            builder.Services.AddSingleton(amuseSettings);
+            builder.Services.AddSingleton<IHardwareSettings>(amuseSettings);
+
+            // Add Windows
+            builder.Services.AddSingleton<MainWindow>();
+            builder.Services.AddSingleton<GenerateWindow>();
+            builder.Services.AddSingleton<CreateWindow>();
+            builder.Services.AddSingleton<ModifyWindow>();
+
+            // Dialogs
+            builder.Services.AddTransient<MessageDialog>();
+            builder.Services.AddTransient<TextInputDialog>();
+            builder.Services.AddTransient<CropImageDialog>();
+            builder.Services.AddTransient<AddModelDialog>();
+            builder.Services.AddTransient<UpdateModelDialog>();
+            builder.Services.AddTransient<AddUpscaleModelDialog>();
+            builder.Services.AddTransient<UpdateUpscaleModelDialog>();
+            builder.Services.AddTransient<UpdateModelMetadataDialog>();
+            builder.Services.AddTransient<ViewModelMetadataDialog>();
+            builder.Services.AddTransient<AddControlNetModelDialog>();
+            builder.Services.AddTransient<UpdateControlNetModelDialog>();
+            builder.Services.AddTransient<AddFeatureExtractorModelDialog>();
+            builder.Services.AddTransient<UpdateFeatureExtractorModelDialog>();
+            builder.Services.AddTransient<PreviewImageDialog>();
+            builder.Services.AddTransient<PreviewVideoDialog>();
+            builder.Services.AddTransient<AddPromptInputDialog>();
+            builder.Services.AddTransient<ModelDownloadDialog>();
+            builder.Services.AddTransient<Dialogs.EZMode.InformationDialog>();
+            builder.Services.AddTransient<Dialogs.EZMode.SettingsDialog>();
+            builder.Services.AddTransient<AppDisclaimer>();
+            builder.Services.AddTransient<AppUpdateDialog>();
+            builder.Services.AddTransient<CreateVideoDialog>();
+            builder.Services.AddTransient<ModelLicenceDialog>();
+            
+
+            // Services
+            builder.Services.AddSingleton<IModelFactory, ModelFactory>();
+            builder.Services.AddSingleton<IDialogService, DialogService>();
+            builder.Services.AddSingleton<IModelDownloadService, ModelDownloadService>();
+            builder.Services.AddSingleton<IDeviceService, DeviceService>();
+            builder.Services.AddSingleton<IFileService, FileService>();
+            builder.Services.AddSingleton<IModelCacheService, ModelCacheService>();
+            builder.Services.AddSingleton<ISuperResolutionService, SuperResolutionService>();
+            builder.Services.AddSingleton<IModeratorService, ModeratorService>();
+            builder.Services.AddSingleton<IPreviewService, PreviewService>();
+            builder.Services.AddSingleton<IHardwareService, HardwareService>();
+            builder.Services.AddSingleton<IProviderService, ProviderService>();
+
+            // Build App
+            _applicationHost = builder.Build();
+        }
+
+        public AsyncRelayCommand UpdateCommand { get; set; }
+        public AsyncRelayCommand<UIModeType> SwitchModeCommand { get; }
+
+        public UIModeType SelectedUIMode
+        {
+            get { return _selectedUIMode; }
+            set { _selectedUIMode = value; NotifyPropertyChanged(); }
+        }
+
+        public bool IsUpdateAvailable
+        {
+            get { return _isUpdateAvailable; }
+            set { _isUpdateAvailable = value; NotifyPropertyChanged(); }
+        }
+
+        public bool IsGenerating
+        {
+            get { return _isGenerating; }
+            set { _isGenerating = value; NotifyPropertyChanged(); }
+        }
+
+
+        /// <summary>
+        /// Raises the <see cref="E:Startup" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="StartupEventArgs"/> instance containing the event data.</param>
+        protected override async void OnStartup(StartupEventArgs e)
+        {
+            try
+            {
+                _logger.LogInformation("[OnStartup] - ApplicationHost Starting...");
+                await _applicationHost.StartAsync();
+
+                // Load Config
+                _logger.LogInformation("[OnStartup] - Loading Configuration...");
+                var settings = GetService<OnnxStackConfig>();
+                _amuseSettings = GetService<AmuseSettings>();
+                _fileService = GetService<IFileService>();
+                _dialogService = GetService<IDialogService>();
+
+                // Set RenderMode
+                RenderOptions.ProcessRenderMode = _amuseSettings.RenderMode;
+
+                var launchCrashReport = !_amuseSettings.HasExited;
+                _amuseSettings.HasExited = false;
+                settings.TempPath = _tempDirectory;
+                VideoHelper.SetConfiguration(settings);
+
+                _logger.LogInformation("[OnStartup] - Query Device Configuration...");
+                _hardwareService = GetService<IHardwareService>();
+                GetService<IDeviceService>();
+
+                // Preload Windows
+                _logger.LogInformation("[OnStartup] - Launch UI...");
+                GetService<GenerateWindow>();
+                GetService<CreateWindow>();
+                GetService<ModifyWindow>();
+                GetService<MainWindow>();
+
+                _splashscreen.Close();
+                await SwitchModeAsync(_amuseSettings.UIMode);
+                MainWindow.Activate();
+                base.OnStartup(e);
+
+                if (!_amuseSettings.IsAppWarningAccepted)
+                {
+                    var dialogService = GetService<IDialogService>();
+                    var appDisclaimer = dialogService.GetDialog<AppDisclaimer>();
+                    _logger.LogInformation($"[OnStartup] - Show AppDisclaimer dialog");
+                    if (!await appDisclaimer.ShowDialogAsync())
+                    {
+                        _logger.LogInformation($"[OnStartup] - User did not accept disclaimer, Exiting...");
+                        Current.Shutdown();
+                        return;
+                    }
+
+                    _logger.LogInformation($"[OnStartup] - User accepted disclaimer, Continuing...");
+                    _amuseSettings.IsAppWarningAccepted = true;
+                }
+
+                await _amuseSettings.SaveAsync();
+                _amuseSettings.NotifyPropertyChanged(nameof(_amuseSettings.DefaultExecutionDevice));
+                _logger.LogInformation($"[OnStartup] - Amuse {App.Version} successfully started");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[OnStartup] - Application Failed to start.");
+                Environment.Exit(1);
+            }
+        }
+
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Windows.Application.SessionEnding" /> event.
+        /// </summary>
+        /// <param name="e">A <see cref="T:System.Windows.SessionEndingCancelEventArgs" /> that contains the event data.</param>
+        protected override async void OnSessionEnding(SessionEndingCancelEventArgs e)
+        {
+            _logger.LogInformation($"[OnSessionEnding] - Application Exit, Reason: {e.ReasonSessionEnding}");
+            await AppShutdown();
+            base.OnSessionEnding(e);
+        }
+
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Windows.Application.Exit" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.Windows.ExitEventArgs" /> that contains the event data.</param>
+        protected override async void OnExit(ExitEventArgs e)
+        {
+            _logger.LogInformation($"[OnExit] - Application Exit, ExitCode: {e.ApplicationExitCode}");
+            await AppShutdown();
+            base.OnExit(e);
+        }
+
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Windows.Application.Activated" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
+        protected override void OnActivated(EventArgs e)
+        {
+            //_logger.LogInformation("[OnActivated] - Resuming Hardware Info.");
+            //_hardwareService?.Resume();
+            base.OnActivated(e);
+        }
+
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Windows.Application.Deactivated" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
+        protected override void OnDeactivated(EventArgs e)
+        {
+            //_logger.LogInformation("[OnDeactivated] - Pausing Hardware Info.");
+            //_hardwareService?.Pause();
+            base.OnDeactivated(e);
+        }
+
+
+        /// <summary>
+        /// Application shutdown.
+        /// </summary>
+        private async Task AppShutdown()
+        {
+            if (_amuseSettings.HasExited)
+                return;
+
+            _logger.LogInformation("[AppShutdown] - Application Shutdown");
+            _amuseSettings.HasExited = true;
+            await _amuseSettings.SaveAsync();
+            await _fileService.DeleteTempFiles();
+            await _applicationHost.StopAsync();
+            await _cancellationTokenSource.CancelAsync();
+            _applicationHost.Dispose();
+            _applicationMutex.WaitOne();
+            _applicationMutex.ReleaseMutex();
+            _applicationMutex.Dispose();
+        }
+
+
+        private async Task SwitchModeAsync(UIModeType type)
+        {
+            _logger.LogInformation($"[SwitchModeAsync] - Switching UIMode {SelectedUIMode} -> {type}");
+
+            SelectedUIMode = type;
+            BaseWindow newView = SelectedUIMode switch
+            {
+                UIModeType.Basic => GetService<GenerateWindow>(),
+                UIModeType.Normal => GetService<MainWindow>(),
+                UIModeType.Paint => GetService<CreateWindow>(),
+                UIModeType.Modify => GetService<ModifyWindow>(),
+                _ => throw new NotImplementedException()
+            };
+
+            if (MainWindow is BaseWindow previousView && previousView.IsLoaded)
+            {
+                previousView.Owner = null;
+                var state = previousView.WindowState;
+                var offsetX = state == WindowState.Normal ? (previousView.ActualWidth - newView.ActualWidth) / 2 : 0;
+                newView.SizeToContent = SizeToContent.Manual;
+                newView.Left = previousView.Left + offsetX;
+                newView.Top = previousView.Top;
+                newView.Owner = previousView;
+                await Task.WhenAll(previousView.HideAsync(), newView.ShowAsync(state));
+                MainWindow = newView;
+                await UpdateUIModeAsync(type);
+                return;
+            }
+
+            newView.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            await newView.ShowAsync(WindowState.Normal);
+            MainWindow = newView;
+            newView.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        }
+
+
+        private async Task UpdateUIModeAsync(UIModeType type)
+        {
+            var amuseSettings = GetService<AmuseSettings>();
+            amuseSettings.UIMode = type;
+            await amuseSettings.SaveAsync();
+        }
+
+
+        private static string GetLogId()
+        {
+            var now = DateTime.Now;
+            return Path.Combine(DataDirectory, @$"Logs\Amuse-{DateTime.Now.ToString("dd-MM-yyyy")}-{now.Hour * 3600 + now.Minute * 60 + now.Second}.txt");
+        }
+
+
+        private void AppDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            _logger.LogError("[UnhandledException] - An Unhandled Exception Occured. {ExceptionObject}", e.ExceptionObject);
+            Log.CloseAndFlush();
+            Current.Shutdown();
+        }
+
+
+        private async void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            _logger.LogError(e.Exception, "[UnobservedTaskException] - An Unhandled Exception Occured.");
+
+            e.SetObserved();
+            await TryShowErrorMessage("TaskScheduler Error", e.Exception?.InnerException?.Message ?? e.Exception?.Message ?? "An Unobserved Task Exception Occured");
+        }
+
+
+        private async void Application_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            _logger.LogError(e.Exception, "[DispatcherUnhandledException] - An Unhandled Exception Occured.");
+
+            e.Handled = true;
+            if (await HandleUnrecoverableException(e.Exception))
+                return;
+
+            //await TryShowErrorMessage("Dispatcher Error", e.Exception?.InnerException?.Message ?? e.Exception?.Message ?? "An Unhandled Dispatcher Exception Occured");
+        }
+
+
+        private async Task TryShowErrorMessage(string title, string message)
+        {
+            try
+            {
+                await UIInvokeAsync(() =>
+                {
+                    return _dialogService.ShowErrorMessageAsync(title, message);
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[TryShowErrorMessage] - Failed to show error dialog.");
+            }
+        }
+
+
+        /// <summary>
+        /// Handles unrecoverable exceptions.
+        /// </summary>
+        /// <param name="exception">The exception.</param>
+        /// <returns></returns>
+        private async Task<bool> HandleUnrecoverableException(Exception exception)
+        {
+            if (exception is UnrecoverableException)
+            {
+                await TryShowErrorMessage("OnnxRuntime Error", "ONNX Runtime failed to initialize!\n\nTo ensure optimal performance, Amuse needs to restart.");
+                await RestartApplication();
+                return true;
+            }
+            return false;
+        }
+
+
+        /// <summary>
+        /// Restarts the application.
+        /// </summary>
+        private async Task RestartApplication()
+        {
+            _logger.LogInformation("[RestartApplication] - Amuse is restarting...");
+            await AppShutdown();
+            Log.CloseAndFlush();
+            Process.Start(Path.Combine(_baseDirectory, "Amuse.exe"));
+            Environment.Exit(0);
+        }
+
+
+        [DllImport("USER32.DLL")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        private void ActivateExistingInstance()
+        {
+            var currentProcess = Process.GetCurrentProcess();
+            var processes = Process.GetProcessesByName(currentProcess.ProcessName);
+            foreach (var process in processes)
+            {
+                if (process.Id != currentProcess.Id)
+                {
+                    SetForegroundWindow(process.MainWindowHandle);
+                    break;
+                }
+            }
+        }
+
+        private Task UpdateAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void NotifyPropertyChanged([CallerMemberName] string property = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(property));
+        }
+        #endregion
+    }
+}

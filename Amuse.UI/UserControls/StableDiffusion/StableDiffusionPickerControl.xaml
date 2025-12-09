@@ -1,0 +1,344 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.StableDiffusionPickerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Amuse.UI.UserControls"
+             mc:Ignorable="d" 
+             d:DesignWidth="500" Name="UI">
+
+    <StackPanel DataContext="{Binding ElementName=UI}" IsEnabled="{Binding IsPipelineLoading, Converter={StaticResource InverseBoolConverter}}">
+
+        <!--Base Model-->
+        <DockPanel>
+            <TextBlock DockPanel.Dock="Top" Style="{StaticResource FieldTextBlockStyle}" Text="Model Selector" Margin="0" />
+            <DockPanel>
+                <Grid Height="36">
+                    <ComboBox 
+                        HorizontalContentAlignment="Stretch"
+                        ItemsSource="{Binding ModelCollectionView}"
+                        SelectedItem="{Binding SelectedBaseModel}"
+                        IsSynchronizedWithCurrentItem="False">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel >
+                                    <DockPanel DockPanel.Dock="Right">
+
+                                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Template.MemoryMin, StringFormat={}{0:F0}GB}" FontSize="10" Opacity=".6"/>
+                                            <TextBlock Text=" - " FontSize="10" Opacity=".6"/>
+                                            <TextBlock Text="{Binding Template.MemoryMax, StringFormat={}{0:F0}GB}" FontSize="10" Opacity=".6"/>
+                                        </StackPanel>
+                                        <Grid HorizontalAlignment="Right">
+                                            <TextBlock Text="Updating" FontSize="10" Opacity=".8" Foreground="{StaticResource WarningColour}" Margin="0,0,5,0"/>
+                                            <Grid.Style>
+                                                <Style TargetType="{x:Type Grid}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Template.IsQueued}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Template.IsDownloading}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+                                        </Grid>
+                                        <Grid HorizontalAlignment="Right">
+                                            <local:FontAwesome DockPanel.Dock="Top" Icon="&#xf111;" IconStyle="Solid" Size="11"  Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                                <local:FontAwesome.Style>
+                                                    <Style TargetType="{x:Type local:FontAwesome}">
+                                                        <Setter Property="Color" Value="{StaticResource ControlDisabledBorderBrush}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Path=IsLoaded}" Value="True">
+                                                                <Setter Property="Color" Value="{StaticResource AccentColour2}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=Template.IsQueued}" Value="True">
+                                                                <Setter Property="Color" Value="{StaticResource WarningColour}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Path=Template.IsDownloading}" Value="True">
+                                                                <Setter Property="Color" Value="{StaticResource WarningColour}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </local:FontAwesome.Style>
+                                            </local:FontAwesome>
+                                            <local:FontAwesome DockPanel.Dock="Top" IsSpinner="True" Icon="&#xf110;" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        </Grid>
+                                    </DockPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding ModelSet.PipelineType}" FontSize="10" Opacity=".6" />
+                                            <TextBlock Text=" - ControlNet" FontSize="10" Opacity=".6" Visibility="{Binding IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                        <ComboBox.ItemContainerStyle>
+                            <Style TargetType="{x:Type ComboBoxItem}">
+                                <Setter Property="IsEnabled" Value="true"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Template.IsQueued}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Template.IsDownloading}" Value="True">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ComboBox.ItemContainerStyle>
+                    </ComboBox>
+                    <TextBlock Text="-- Select Model --" Visibility="{Binding SelectedBaseModel, Converter={StaticResource InverseNullVisibilityConverter}}" IsHitTestVisible="False" Margin="3,2" FontStyle="Italic" Opacity=".7" VerticalAlignment="Center" />
+                </Grid>
+            </DockPanel>
+        </DockPanel>
+
+
+        <!--Variant-->
+        <DockPanel Margin="0,1,0,0" >
+            <Border DockPanel.Dock="Left" BorderBrush="{StaticResource ButtonBorderDefault}" BorderThickness="1,1,0,1" Padding="0,0" Width="76">
+                <TextBlock  Text="Variant" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11" />
+            </Border>
+            <local:VariantPicker Variants="{Binding SelectedBaseModel.Variants, Mode=OneWay}" SelectedVariant="{Binding SelectedVariant, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <DockPanel.Style>
+                <Style TargetType="{x:Type DockPanel}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding SelectedBaseModel.HasVariants}" Value="True">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DockPanel.Style>
+        </DockPanel>
+
+
+        <!--Extractors-->
+        <DockPanel Margin="0,1,0,0" Visibility="{Binding IsFeatureExtractorEnabled, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+            <Border DockPanel.Dock="Left" BorderBrush="{StaticResource ButtonBorderDefault}" BorderThickness="1,1,0,1" Padding="0,0" Width="76">
+                <TextBlock  Text="Extractor" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11" />
+            </Border>
+            <ComboBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding FeatureExtractorModelCollectionView}" SelectedItem="{Binding SelectedFeatureExtractorModel}" IsSynchronizedWithCurrentItem="False" >
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <local:FontAwesome DockPanel.Dock="Right" Icon="&#xf111;" IconStyle="Solid" Size="11" Margin="0,0,2,0" Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <local:FontAwesome.Style>
+                                    <Style TargetType="{x:Type local:FontAwesome}">
+                                        <Setter Property="Color" Value="{StaticResource ControlDisabledBorderBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=IsLoaded}" Value="True">
+                                                <Setter Property="Color" Value="{StaticResource AccentColour2}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </local:FontAwesome.Style>
+                            </local:FontAwesome>
+                            <local:FontAwesome DockPanel.Dock="Right" IsSpinner="True" Icon="&#xf110;" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            <TextBlock Text="{Binding Name}" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ComboBoxItem}">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
+        </DockPanel>
+
+        <!--ControlNet-->
+        <Grid Visibility="{Binding SelectedBaseModel.IsControlNet, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+
+            <DockPanel Margin="0,1,0,0" Visibility="{Binding IsControlNetEnabled, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+                <Border DockPanel.Dock="Left" BorderBrush="{StaticResource ButtonBorderDefault}" BorderThickness="1,1,0,1" Padding="0,0" Width="76">
+                    <TextBlock  Text="ControlNet" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
+                </Border>
+                <ComboBox HorizontalContentAlignment="Stretch" ItemsSource="{Binding ControlNetModelCollectionView}" SelectedItem="{Binding SelectedControlNetModel}" IsSynchronizedWithCurrentItem="False" >
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel>
+                                <local:FontAwesome DockPanel.Dock="Right" Icon="&#xf111;" IconStyle="Solid" Size="11" Margin="0,0,2,0" Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                    <local:FontAwesome.Style>
+                                        <Style TargetType="{x:Type local:FontAwesome}">
+                                            <Setter Property="Color" Value="{StaticResource ControlDisabledBorderBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Path=IsLoaded}" Value="True">
+                                                    <Setter Property="Color" Value="{StaticResource AccentColour2}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </local:FontAwesome.Style>
+                                </local:FontAwesome>
+                                <local:FontAwesome DockPanel.Dock="Right" IsSpinner="True" Icon="&#xf110;" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                <TextBlock Text="{Binding Name}" />
+                            </DockPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                    <ComboBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ComboBoxItem}">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ComboBox.ItemContainerStyle>
+                </ComboBox>
+            </DockPanel>
+        </Grid>
+
+
+
+
+
+        <!--Upscale-->
+        <DockPanel Margin="0,1,0,0" Visibility="{Binding IsUpscalerEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border DockPanel.Dock="Left" BorderBrush="{StaticResource ButtonBorderDefault}" BorderThickness="1,1,0,1" Padding="0,0" Width="76" >
+                <TextBlock  Text="Upscaler" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="11"/>
+            </Border>
+            <ComboBox ItemsSource="{Binding UpscaleModelCollectionView}" SelectedItem="{Binding SelectedUpscaleModel}" IsSynchronizedWithCurrentItem="False" HorizontalContentAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel>
+                            <local:FontAwesome DockPanel.Dock="Right" Icon="&#xf111;" IconStyle="Solid" Size="11" Margin="0,0,2,0" Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <local:FontAwesome.Style>
+                                    <Style TargetType="{x:Type local:FontAwesome}">
+                                        <Setter Property="Color" Value="{StaticResource ControlDisabledBorderBrush}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path=IsLoaded}" Value="True">
+                                                <Setter Property="Color" Value="{StaticResource AccentColour2}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </local:FontAwesome.Style>
+                            </local:FontAwesome>
+                            <local:FontAwesome DockPanel.Dock="Right" IsSpinner="True" Icon="&#xf110;" Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            <TextBlock Text="{Binding Name}" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="{x:Type ComboBoxItem}">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+            </ComboBox>
+        </DockPanel>
+
+
+        <!--Options/Load/Unload-->
+        <DockPanel Margin="0,2,0,0" MinHeight="24">
+
+            <Grid DockPanel.Dock="Right">
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" >
+
+                    <Grid>
+                        <Button Name="ButtonLoad" Content="Load" Width="70" Command="{Binding LoadPipelineCommand}" />
+                        <Grid.Style>
+                            <Style TargetType="{x:Type Grid}">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsEnabled, ElementName=ButtonLoad}" Value="False" />
+                                            <Condition Binding="{Binding CurrentPipeline.IsLoaded, ElementName=UI}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                    </Grid>
+
+                    <Grid>
+                        <Button  Width="70" IsHitTestVisible="False" >
+                            <TextBlock Text="Ready!" Foreground="{StaticResource SuccessColour}" />
+                        </Button>
+                        <Grid.Style>
+                            <Style TargetType="{x:Type Grid}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding IsEnabled, ElementName=ButtonLoad}" Value="False" />
+                                            <Condition Binding="{Binding CurrentPipeline.IsLoaded, ElementName=UI}" Value="True" />
+                                        </MultiDataTrigger.Conditions>
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                    </Grid>
+
+                    <Button Command="{Binding UnloadPipelineCommand}" Padding="8,0" ToolTip="Unload Models">
+                        <local:FontAwesome Icon="&#xf00d;" Size="12" Color="{StaticResource DangerColour}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Top" TextBlock.FontSize="11">
+
+                <!--Upscaler-->
+                <Grid Visibility="{Binding IsUpscalerSupported, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,2,0,0">
+                    <CheckBox Content="Upscaler" IsChecked="{Binding IsUpscalerEnabled}" IsEnabled="{Binding UpscaleModelCollectionView.IsEmpty, Converter={StaticResource InverseBoolConverter}}" Margin="0,0,8,0" VerticalContentAlignment="Center" />
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="ToolTip" Value="{x:Null}" />
+                            <Style.Triggers>
+                                <DataTrigger  Binding="{Binding UpscaleModelCollectionView.IsEmpty}" Value="True">
+                                    <Setter Property="ToolTip" Value="No Upscale models installed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                </Grid>
+
+                <!--FeatureExtractor -->
+                <Grid Visibility="{Binding IsFeatureExtractorSupported, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,2,0,0">
+                    <CheckBox Content="Extractor" IsChecked="{Binding IsFeatureExtractorEnabled}" IsEnabled="{Binding FeatureExtractorModelCollectionView.IsEmpty, Converter={StaticResource InverseBoolConverter}}" Margin="0,0,8,0" VerticalContentAlignment="Center"/>
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="ToolTip" Value="{x:Null}" />
+                            <Style.Triggers>
+                                <DataTrigger  Binding="{Binding FeatureExtractorModelCollectionView.IsEmpty}" Value="True">
+                                    <Setter Property="ToolTip" Value="No Feature Extractor models installed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                </Grid>
+
+                <!--ControlNet-->
+                <Grid Visibility="{Binding IsControlNetSupported, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,2,0,0">
+                    <Grid IsEnabled="{Binding SelectedBaseModel.IsControlNet}">
+                        <CheckBox Content="ControlNet" IsChecked="{Binding IsControlNetEnabled}" IsEnabled="{Binding ControlNetModelCollectionView.IsEmpty, Converter={StaticResource InverseBoolConverter}}" VerticalContentAlignment="Center" />
+                    </Grid>
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="ToolTip" Value="{x:Null}" />
+                            <Style.Triggers>
+                                <DataTrigger  Binding="{Binding ControlNetModelCollectionView.IsEmpty}" Value="True">
+                                    <Setter Property="ToolTip" Value="No Control models installed" />
+                                </DataTrigger>
+                                <DataTrigger  Binding="{Binding SelectedBaseModel.IsControlNet}" Value="False">
+                                    <Setter Property="ToolTip" Value="This model does not support ControlNet" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                </Grid>
+
+                <!--AMD XDNA™ Super Resolution-->
+                <Grid Visibility="{Binding IsSuperResolutionSupported, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,2,0,0">
+                    <CheckBox Content="AMD XDNA™ Super Resolution" IsChecked="{Binding IsSuperResolutionEnabled}" IsEnabled="{Binding SelectedBaseModel, Converter={StaticResource NullBooleanConverter}}" VerticalContentAlignment="Center" />
+                </Grid>
+
+            </WrapPanel>
+
+        </DockPanel>
+
+    </StackPanel>
+
+</UserControl>

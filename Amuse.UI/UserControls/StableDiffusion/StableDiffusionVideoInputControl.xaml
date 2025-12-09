@@ -1,0 +1,467 @@
+﻿<userControls:StableDiffusionInputControlBase x:Class="Amuse.UI.UserControls.StableDiffusionVideoInputControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             xmlns:models="clr-namespace:Amuse.UI.Models"
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             mc:Ignorable="d" 
+             d:DesignWidth="350"
+             d:DesignHeight="500"
+             x:Name="UI">
+    <DockPanel DataContext="{Binding ElementName=UI}" >
+
+        <Grid DockPanel.Dock="Bottom" MinHeight="270">
+            <TabControl DockPanel.Dock="Top">
+
+                <!--Basic-->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <userControls:FontAwesome Icon="&#xf1de;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
+                            <TextBlock Text="Options" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <DockPanel>
+
+                        <!--Memory Mode-->
+                        <userControls:MemoryModeControl
+                            DockPanel.Dock="Bottom"
+                            Margin="2,6,4,8"
+                            MemoryInfo="{Binding MemoryInfo}"
+                            MemoryMode="{Binding MemoryMode}"
+                            IsMinimized="{Binding IsMemoryModeMinimized}"
+                            IsPipelineLoaded="{Binding CurrentPipeline.BaseModel.IsLoaded}"/>
+
+
+                        <StackPanel Margin="2,2,2,0">
+
+                            <!--Scheduler + Resolution-->
+                            <UniformGrid Columns="2">
+
+                                <StackPanel Margin="0,0,5,0">
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}">Scheduler</TextBlock>
+                                    <ComboBox ItemsSource="{Binding Schedulers}" SelectedItem="{Binding SelectedScheduler}" Validation.ErrorTemplate="{x:Null}"/>
+                                </StackPanel>
+
+                                <DockPanel Margin="5,0,0,0">
+                                    <Grid DockPanel.Dock="Right">
+                                        <CheckBox IsChecked="{Binding PromptOptions.FrameResample}" Content="HQ"  Margin="4,21,0,0"/>
+                                    </Grid>
+                                    <StackPanel >
+                                        <StackPanel.Resources>
+                                            <CollectionViewSource x:Key="GroupedResolutions" Source="{Binding ResolutionOptions}">
+                                                <CollectionViewSource.GroupDescriptions>
+                                                    <PropertyGroupDescription PropertyName="Type"/>
+                                                </CollectionViewSource.GroupDescriptions>
+                                            </CollectionViewSource>
+                                        </StackPanel.Resources>
+                                        <TextBlock Style="{StaticResource FieldTextBlockStyle}">Resolution</TextBlock>
+                                        <ComboBox ItemsSource="{Binding Source={StaticResource GroupedResolutions}}"  SelectedItem="{Binding SelectedResolution}" IsSynchronizedWithCurrentItem="False">
+                                            <ComboBox.ItemContainerStyle>
+                                                <Style TargetType="{x:Type ComboBoxItem}">
+                                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                </Style>
+                                            </ComboBox.ItemContainerStyle>
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel>
+                                                        <TextBlock DockPanel.Dock="Left" Text="{Binding}" Visibility="{Binding PromptOptions.FrameResample, ElementName=UI, Converter={StaticResource InverseBooleanToVisibilityConverter}}" />
+                                                        <TextBlock DockPanel.Dock="Left" Text="{Binding HQDisplayName}" Visibility="{Binding PromptOptions.FrameResample, ElementName=UI, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                                        <TextBlock Margin="5,1,0,0" Text="{Binding Aspect}" Opacity=".7" FontSize="10"  Width="20" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                            <ComboBox.GroupStyle>
+                                                <GroupStyle>
+                                                    <GroupStyle.HeaderTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Margin="4,4,0,0" Text="{Binding Name}" FontSize="10" FontStyle="Italic" Opacity=".7"/>
+                                                        </DataTemplate>
+                                                    </GroupStyle.HeaderTemplate>
+                                                </GroupStyle>
+                                            </ComboBox.GroupStyle>
+                                        </ComboBox>
+                                    </StackPanel>
+                                </DockPanel>
+
+
+                            </UniformGrid>
+
+
+                            <!--Seed + Input/Output FPS-->
+                            <UniformGrid Columns="2" Margin="0,3,0,0">
+                                <DockPanel Margin="0,0,5,0">
+                                    <UniformGrid DockPanel.Dock="Right" Columns="2" VerticalAlignment="Bottom" Height="23">
+                                        <Button Command="{Binding NewSeedCommand}" BorderThickness="0,1,1,1" ToolTip="New Seed" Width="25">
+                                            <userControls:FontAwesome Icon="&#xf051;" IconStyle="Light" Size="15"/>
+                                        </Button>
+                                        <Button Command="{Binding RandomSeedCommand}"  BorderThickness="0,1,1,1" ToolTip="Random Seeds">
+                                            <userControls:FontAwesome Icon="&#xf074;" IconStyle="Light"/>
+                                        </Button>
+                                    </UniformGrid>
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource FieldTextBlockStyle}">Seed</TextBlock>
+                                        <TextBox Text="{Binding SchedulerOptions.Seed}"/>
+                                    </StackPanel>
+                                </DockPanel>
+                                <UniformGrid Columns="2" Margin="5,0,0,0">
+                                    <Grid>
+                                        <StackPanel Margin="0,0,3,0" MinWidth="60" Visibility="{Binding DiffuserType, Converter={StaticResource InverseEnumToVisibilityConverter}, ConverterParameter=VideoToVideo}" >
+                                            <TextBlock Style="{StaticResource FieldTextBlockStyle}">Input FPS</TextBlock>
+                                            <ComboBox ItemsSource="{Binding FrameRateOptions}" SelectedItem="{Binding PromptOptions.VideoInputFPS}" SelectionChanged="FrameRate_SelectionChanged"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="3,0,0,0" MinWidth="60" Visibility="{Binding DiffuserType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=VideoToVideo}">
+                                            <TextBlock Style="{StaticResource FieldTextBlockStyle}">Input FPS</TextBlock>
+                                            <userControls:FloatBox FloatValue="{Binding PromptOptions.VideoInputFPS}" Truncate="2" />
+                                        </StackPanel>
+                                    </Grid>
+                                    <StackPanel  >
+                                        <TextBlock Style="{StaticResource FieldTextBlockStyle}">Output FPS</TextBlock>
+                                        <userControls:FloatBox FloatValue="{Binding PromptOptions.VideoOutputFPS}" Truncate="2" />
+                                    </StackPanel>
+                                </UniformGrid>
+                            </UniformGrid>
+
+
+                            <!--Steps + Guidance-->
+                            <UniformGrid Columns="2" Margin="0,5,0,0" Visibility="{Binding CurrentPipeline.PipelineType, Converter={StaticResource InverseEnumToVisibilityConverter}, ConverterParameter=StableCascade}">
+                                <userControls:SliderElement Text="Steps" Value="{Binding SchedulerOptions.InferenceSteps}" Minimum="{Binding SchedulerDefaults.StepsMin}" Maximum="{Binding SchedulerDefaults.StepsMax}" TickFrequency="1" Margin="0,0,5,0" />
+                                <userControls:SliderElement Text="Guidance Scale" Value="{Binding SchedulerOptions.GuidanceScale}" Minimum="{Binding SchedulerDefaults.GuidanceMin}" Maximum="{Binding SchedulerDefaults.GuidanceMax}" TickFrequency="0.1" ValueFormat="N2"  Margin="5,0,0,0" />
+                            </UniformGrid>
+
+
+                            <!--Strength + ControlNet Strength-->
+                            <UniformGrid Columns="2" Margin="0,5,0,0">
+                                <Grid Margin="0,0,5,0" Visibility="{Binding DiffuserType, Converter={StaticResource InverseEnumToVisibilityConverter}, ConverterParameter=TextToVideo}">
+                                    <userControls:SliderElement Text="Strength" Value="{Binding SchedulerOptions.Strength}" Minimum="0" Maximum="1" TickFrequency="0.01" ValueFormat="N2" ValueChanged="SliderStrength_ValueChanged"/>
+                                </Grid>
+                                <Grid Margin="5,0,0,0" Visibility="{Binding CurrentPipeline.IsControlNetEnabled, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+                                    <userControls:SliderElement Text="ControlNet Strength" Value="{Binding SchedulerOptions.ConditioningScale}" Minimum="0" Maximum="1" TickFrequency="0.01" ValueFormat="N2" />
+                                </Grid>
+                            </UniformGrid>
+
+
+                            <!--Frames + Noise-->
+                            <UniformGrid Columns="2" Margin="0,5,0,0" Visibility="{Binding DiffuserType, Converter={StaticResource InverseEnumToVisibilityConverter}, ConverterParameter=VideoToVideo}" >
+                                <StackPanel Margin="0,0,5,0" >
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}">Keyframes</TextBlock>
+                                    <ComboBox x:Name="MotionFramesControl" ItemsSource="{Binding MotionFramesOptions}" SelectedItem="{Binding PromptOptions.MotionFrames}" SelectionChanged="MotionFrames_SelectionChanged" MaxDropDownHeight="150" >
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding}" />
+                                                    <TextBlock Text="{Binding StringFormat={}({0} seconds), Converter={StaticResource DivideByConverter}, ConverterParameter=8}" Margin="5,0,0,0" FontSize="9" FontStyle="Italic" VerticalAlignment="Center" Opacity=".7"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Margin="5,0,0,0">
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}">Noise Repeat</TextBlock>
+                                    <ComboBox ItemsSource="{Binding PromptOptions.MotionFrames, Converter={StaticResource DivisibleByConverter}}" SelectedItem="{Binding PromptOptions.MotionNoiseContext}" MaxDropDownHeight="150" >
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding}" />
+                                                    <TextBlock Text="{Binding StringFormat={}({0} seconds), Converter={StaticResource DivideByConverter}, ConverterParameter=8}" Margin="5,0,0,0" FontSize="9" FontStyle="Italic" VerticalAlignment="Center" Opacity=".7"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </UniformGrid>
+
+
+                            <!--Overlap-->
+                            <Grid Margin="0,5,0,0" IsEnabled="{Binding IsFrameControlEnabled}">
+                                <userControls:SliderElement Text="Overlap" Value="{Binding PromptOptions.MotionContextOverlap}" Minimum="0" Maximum="8" TickFrequency="1"/>
+                            </Grid>
+
+                        </StackPanel>
+                    </DockPanel>
+
+                    <TabItem.Style>
+                        <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding BatchOptions.IsAutomationEnabled}" Value="True" />
+                                        <Condition Binding="{Binding IsGenerating}" Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <MultiDataTrigger.Setters>
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </MultiDataTrigger.Setters>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TabItem.Style>
+                </TabItem>
+
+
+                <!--Advanced-->
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <userControls:FontAwesome Icon="&#xf085;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
+                            <TextBlock Text="Advanced" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <StackPanel Margin="2">
+
+                        <UniformGrid Columns="3" Rows="1" Margin="0,1,0,0" >
+                            <StackPanel VerticalAlignment="Bottom">
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">Optimization</TextBlock>
+                                <ComboBox ItemsSource="{Binding Source={StaticResource OptimizationType}}" SelectedItem="{Binding PromptOptions.OptimizationType}" />
+                            </StackPanel>
+                            <StackPanel Margin="1,0,1,0">
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">Beta Schedule</TextBlock>
+                                <ComboBox ItemsSource="{Binding Source={StaticResource BetaScheduleType}}" SelectedItem="{Binding SchedulerOptions.BetaSchedule}">
+                                    <ComboBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding}" Value="SquaredCosCapV2">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ComboBox.ItemContainerStyle>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel>
+                            </StackPanel>
+                        </UniformGrid>
+
+
+                        <UniformGrid Columns="3">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">BetaStart</TextBlock>
+                                <TextBox Text="{Binding SchedulerOptions.BetaStart}"/>
+                            </StackPanel>
+                            <StackPanel Margin="1,0,1,0">
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">BetaEnd</TextBlock>
+                                <TextBox Text="{Binding SchedulerOptions.BetaEnd}"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">MaximumBeta</TextBlock>
+                                <TextBox Text="{Binding SchedulerOptions.MaximumBeta}"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+
+                        <UniformGrid Columns="3">
+                            <StackPanel Margin="1,0,1,0">
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">Shift</TextBlock>
+                                <TextBox Text="{Binding SchedulerOptions.Shift}"/>
+                            </StackPanel>
+                            <StackPanel Margin="1,0,1,0">
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">Decoder TileMode</TextBlock>
+                                <ComboBox ItemsSource="{Binding Source={StaticResource TileMode}}" SelectedItem="{Binding PromptOptions.DecoderTileMode}" Style="{StaticResource EnumComboBox}"/>
+                            </StackPanel>
+                            <StackPanel VerticalAlignment="Bottom">
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">Decoder Tile Overlap</TextBlock>
+                                <TextBox Text="{Binding PromptOptions.DecoderTileOverlap}"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <StackPanel HorizontalAlignment="Right">
+                            <Button  Command="{Binding ResetSchedulerOptionsCommand}" Margin="0,5,0,0">
+                                <userControls:FontAwesome Icon="&#xf2ea;" IconStyle="Light" Size="14"  Margin="2"/>
+                            </Button>
+                        </StackPanel>
+
+                    </StackPanel>
+
+                    <TabItem.Style>
+                        <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                            <Style.Triggers>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding BatchOptions.IsAutomationEnabled}" Value="True" />
+                                        <Condition Binding="{Binding IsGenerating}" Value="True" />
+                                    </MultiDataTrigger.Conditions>
+                                    <MultiDataTrigger.Setters>
+                                        <Setter Property="IsEnabled" Value="False" />
+                                    </MultiDataTrigger.Setters>
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TabItem.Style>
+                </TabItem>
+
+                <!--Automation-->
+                <TabItem IsEnabled="{Binding BatchOptions.IsRealtimeEnabled, Converter={StaticResource InverseBoolConverter}}" IsSelected="{Binding BatchOptions.IsAutomationEnabled}">
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal" Margin="5">
+                            <userControls:FontAwesome Icon="&#xf544;" IconStyle="Solid" Color="{StaticResource AccentColour2}"/>
+                            <TextBlock  Text="Automation" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <StackPanel Margin="5" >
+
+                        <StackPanel>
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">Automation Type</TextBlock>
+                                <UniformGrid Columns="2">
+                                    <ComboBox ItemsSource="{Binding Source={StaticResource BatchOptionType}}" SelectedItem="{Binding BatchOptions.BatchType}">
+                                        <ComboBox.ItemContainerStyle>
+                                            <Style TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding}" Value="Strength">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding}" Value="ConditioningScale">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Setter Property="IsEnabled" Value="False" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ComboBox.ItemContainerStyle>
+                                    </ComboBox>
+                                    <CheckBox Content="Disable History" IsChecked="{Binding BatchOptions.DisableHistory}" HorizontalAlignment="Right" />
+                                </UniformGrid>
+                            </StackPanel>
+
+                            <!--Seed-->
+                            <StackPanel Margin="0,10">
+                                <UniformGrid Columns="3">
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}" Text="Count"/>
+                                    <TextBlock />
+                                    <TextBlock />
+                                </UniformGrid>
+                                <UniformGrid Columns="3">
+                                    <TextBox Text="{Binding BatchOptions.ValueTo}" Margin="2,0"/>
+                                    <TextBlock />
+                                    <TextBlock />
+                                </UniformGrid>
+                                <StackPanel.Style>
+                                    <Style TargetType="{x:Type StackPanel}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding BatchOptions.BatchType, ElementName=UI}" Value="Seed" >
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+
+                            <!--Step-->
+                            <StackPanel Margin="0,10">
+                                <UniformGrid Columns="3">
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}" Text="Start Step"/>
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}" Text="End Step"/>
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}" Text="Increment"/>
+                                </UniformGrid>
+                                <UniformGrid Columns="3">
+                                    <TextBox Text="{Binding BatchOptions.ValueFrom}" Margin="0,0,2,0"/>
+                                    <TextBox Text="{Binding BatchOptions.ValueTo}" Margin="2,0"/>
+                                    <TextBox Text="{Binding BatchOptions.Increment}" Margin="2,0,0,0"/>
+                                </UniformGrid>
+                                <StackPanel.Style>
+                                    <Style TargetType="{x:Type StackPanel}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding BatchOptions.BatchType, ElementName=UI}" Value="Step" >
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+
+
+                            <!--Guidance-->
+                            <StackPanel Margin="0,10">
+                                <UniformGrid Columns="3">
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}" Text="Start Value"/>
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}" Text="End Value"/>
+                                    <TextBlock Style="{StaticResource FieldTextBlockStyle}" Text="Increment"/>
+                                </UniformGrid>
+                                <UniformGrid Columns="3">
+                                    <TextBox Text="{Binding BatchOptions.ValueFrom}" Margin="0,0,2,0"/>
+                                    <TextBox Text="{Binding BatchOptions.ValueTo}" Margin="2,0"/>
+                                    <TextBox Text="{Binding BatchOptions.Increment}" Margin="2,0,0,0"/>
+                                </UniformGrid>
+                                <StackPanel.Style>
+                                    <Style TargetType="{x:Type StackPanel}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding BatchOptions.BatchType, ElementName=UI}" Value="Guidance" >
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+
+
+
+
+
+                            <!--Progress-->
+                            <StackPanel Margin="0,5">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="Steps " />
+                                    <TextBlock Text="{Binding BatchOptions.StepValue}" DockPanel.Dock="Left" />
+                                    <TextBlock Text=" / " />
+                                    <TextBlock Text="{Binding BatchOptions.StepsValue}" DockPanel.Dock="Right"/>
+                                </StackPanel>
+                                <ProgressBar Value="{Binding BatchOptions.StepValue}" Maximum="{Binding BatchOptions.StepsValue}" Height="22"/>
+
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0 ">
+                                        <TextBlock Text="Batch " />
+                                        <TextBlock Text="{Binding BatchOptions.BatchValue}" DockPanel.Dock="Left" />
+                                        <TextBlock Text=" / " />
+                                        <TextBlock Text="{Binding BatchOptions.BatchsValue}" DockPanel.Dock="Right"/>
+                                    </StackPanel>
+                                    <ProgressBar Value="{Binding BatchOptions.BatchValue}" Maximum="{Binding BatchOptions.BatchsValue}" Height="22"/>
+                                    <StackPanel.Style>
+                                        <Style TargetType="{x:Type StackPanel}">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding BatchOptions.BatchType, ElementName=UI}" Value="Realtime" >
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                </StackPanel>
+
+
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+
+                </TabItem>
+
+
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <DockPanel>
+                            <UniformGrid IsItemsHost="True" Rows="1" DockPanel.Dock="Top"></UniformGrid>
+                            <ContentPresenter ContentSource="SelectedContent"></ContentPresenter>
+                        </DockPanel>
+                    </ControlTemplate>
+                </TabControl.Template>
+            </TabControl>
+        </Grid>
+
+        <!--Prompt-->
+        <Grid Margin="0,0,0,20">
+            <userControls:PromptInputControl 
+                Settings="{Binding Settings}" 
+                PromptOptions="{Binding PromptOptions, Mode=TwoWay}" 
+                IsNegativePromptSupported="{Binding SchedulerOptions.GuidanceScale, ConverterParameter=1, Converter={StaticResource GreaterThanToBoolConverter}}" />
+        </Grid>
+
+    </DockPanel>
+</userControls:StableDiffusionInputControlBase>

@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34202.233
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amuse.UI", "Amuse.UI\Amuse.UI.csproj", "{135BE435-46D9-4CF8-9B6F-E1F420CB005A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amuse.Launcher", "Amuse.Launcher\Amuse.Launcher.csproj", "{254B7AB5-CF3B-4EED-96BB-D07721F7F45E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_Direct|x64 = Debug_Direct|x64
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+		Release-Installer|x64 = Release-Installer|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug_Direct|x64.ActiveCfg = Debug_Direct|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug_Direct|x64.Build.0 = Debug_Direct|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug|x64.ActiveCfg = Debug|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Debug|x64.Build.0 = Debug|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release|x64.ActiveCfg = Release|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release|x64.Build.0 = Release|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-Installer|x64.ActiveCfg = Release-Installer|x64
+		{135BE435-46D9-4CF8-9B6F-E1F420CB005A}.Release-Installer|x64.Build.0 = Release-Installer|x64
+		{254B7AB5-CF3B-4EED-96BB-D07721F7F45E}.Debug_Direct|x64.ActiveCfg = Debug|x64
+		{254B7AB5-CF3B-4EED-96BB-D07721F7F45E}.Debug|x64.ActiveCfg = Debug|x64
+		{254B7AB5-CF3B-4EED-96BB-D07721F7F45E}.Release|x64.ActiveCfg = Release|x64
+		{254B7AB5-CF3B-4EED-96BB-D07721F7F45E}.Release|x64.Build.0 = Release|x64
+		{254B7AB5-CF3B-4EED-96BB-D07721F7F45E}.Release-Installer|x64.ActiveCfg = Release|x64
+		{254B7AB5-CF3B-4EED-96BB-D07721F7F45E}.Release-Installer|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F3857B76-CF15-4C44-8C23-4256CD82F51D}
+	EndGlobalSection
+EndGlobal

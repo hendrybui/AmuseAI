@@ -1,0 +1,271 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.InpaintInputControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:WindowsControls="clr-namespace:System.Windows.Controls;assembly=PresentationFramework"
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             mc:Ignorable="d"
+             d:DesignWidth="500"
+             Name="UI" 
+             Focusable="True" 
+             AllowDrop="True">
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="O" Command="{Binding LoadImageCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="C" Command="{Binding CopyImageCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="V" Command="{Binding PasteImageCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="S" Command="{Binding SaveImageCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="B" Command="{Binding MaskLoadCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="Z" Command="{Binding MaskUndoCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="Y" Command="{Binding MaskRedoCommand, ElementName=UI}" />
+        <KeyBinding Modifiers="Ctrl" Key="M" Command="{Binding MaskSaveCommand, ElementName=UI}" />
+    </UserControl.InputBindings>
+    <Border DataContext="{Binding ElementName=UI}" BorderBrush="{StaticResource ControlBrightDefaultBorderBrush}" BorderThickness="2" >
+        <DockPanel Margin="2" >
+            <StackPanel DockPanel.Dock="Bottom" Visibility="{Binding ToolbarVisibility}">
+                <UniformGrid  Columns="3" Height="35" >
+
+                    <!--Info-->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Visibility="{Binding HasSourceResult, Converter={StaticResource BooleanToHiddenConverter}}">
+                        <TextBlock Text="Image File:" Margin="5,0,0,0"  FontSize="10" Opacity=".6" VerticalAlignment="Center" FontStyle="Italic"/>
+                        <TextBlock Text="{Binding SourceImage.FileName, Converter={StaticResource FullPathToFileNameConverter}}" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel>
+                    </StackPanel>
+
+                    <!--Tool Size-->
+                    <userControls:SliderElement 
+                        Text="Tool Size" 
+                        Minimum="2" 
+                        Maximum="100" 
+                        TickFrequency="1" 
+                        FontSize="8" 
+                        ValueFontSize="8"
+                        Margin="0,6,0,0" 
+                        Value="{Binding MaskDrawSize}" 
+                        Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                </UniformGrid>
+
+                <DockPanel  Height="30" Margin="1">
+
+                    <!--Load-->
+                    <Button DockPanel.Dock="Left" Command="{Binding LoadImageCommand}" ToolTip="Load Image File" Width="100" Style="{StaticResource InfoButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <userControls:FontAwesome Icon="&#xf0ee;" IconStyle="Light" Color="{StaticResource InfoColour}" />
+                            <TextBlock Text="Image" Margin="5,0,0,0" Foreground="{StaticResource InfoColour}"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!--Clear-->
+                    <Button DockPanel.Dock="Right" Command="{Binding ClearImageCommand}" Width="50" Style="{StaticResource DangerButtonStyle}" IsEnabled="{Binding HasSourceResult}">
+                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}" />
+                    </Button>
+
+                    <!--Mask Controls-->
+                    <UniformGrid Columns="6" Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" IsEnabled="{Binding HasSourceResult}">
+
+                        <!--Resize-->
+                        <Grid ToolTip="Move/Resize Mode" ToolTipService.InitialShowDelay="200" ToolTipService.ShowOnDisabled="True">
+                            <Button Command="{Binding MaskModeCommand}" CommandParameter="{x:Static WindowsControls:InkCanvasEditingMode.None}" >
+                                <userControls:FontAwesome Icon="&#xf5ef;" IconStyle="Light"  >
+                                    <userControls:FontAwesome.Style>
+                                        <Style TargetType="{x:Type userControls:FontAwesome}" BasedOn="{StaticResource {x:Type userControls:FontAwesome}}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding MaskEditingMode, ElementName=UI}" Value="None">
+                                                    <Setter Property="Color" Value="{StaticResource AccentColour2}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </userControls:FontAwesome.Style>
+                                </userControls:FontAwesome>
+                            </Button>
+                            <Grid.Style>
+                                <Style TargetType="{x:Type Grid}">
+                                    <Setter Property="IsEnabled" Value="True" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding MaskEditingMode, ElementName=UI}" Value="None">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
+
+                        <!--Draw-->
+                        <Grid ToolTip="Draw Mode" ToolTipService.InitialShowDelay="200" ToolTipService.ShowOnDisabled="True">
+                            <Button Command="{Binding MaskModeCommand}" CommandParameter="{x:Static WindowsControls:InkCanvasEditingMode.Ink}" >
+                                <userControls:FontAwesome Icon="&#xf304;" IconStyle="Light"  >
+                                    <userControls:FontAwesome.Style>
+                                        <Style TargetType="{x:Type userControls:FontAwesome}" BasedOn="{StaticResource {x:Type userControls:FontAwesome}}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding MaskEditingMode, ElementName=UI}" Value="Ink">
+                                                    <Setter Property="Color" Value="{StaticResource AccentColour2}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </userControls:FontAwesome.Style>
+                                </userControls:FontAwesome>
+                            </Button>
+                            <Grid.Style>
+                                <Style TargetType="{x:Type Grid}">
+                                    <Setter Property="IsEnabled" Value="True" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding MaskEditingMode, ElementName=UI}" Value="Ink">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
+
+                        <!--Erase-->
+                        <Grid ToolTip="Erase Mode" ToolTipService.InitialShowDelay="200" ToolTipService.ShowOnDisabled="True">
+                            <Button Command="{Binding MaskModeCommand}"  CommandParameter="{x:Static WindowsControls:InkCanvasEditingMode.EraseByPoint}" >
+                                <userControls:FontAwesome Icon="&#xf12d;" IconStyle="Light"  >
+                                    <userControls:FontAwesome.Style>
+                                        <Style TargetType="{x:Type userControls:FontAwesome}" BasedOn="{StaticResource {x:Type userControls:FontAwesome}}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding MaskEditingMode, ElementName=UI}" Value="EraseByPoint">
+                                                    <Setter Property="Color" Value="{StaticResource AccentColour2}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </userControls:FontAwesome.Style>
+                                </userControls:FontAwesome>
+                            </Button>
+                            <Grid.Style>
+                                <Style TargetType="{x:Type Grid}">
+                                    <Setter Property="IsEnabled" Value="True" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding MaskEditingMode, ElementName=UI}" Value="EraseByPoint">
+                                            <Setter Property="IsEnabled" Value="False" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+                        </Grid>
+
+                        <TextBlock />
+
+                        <!--Invert Mask-->
+                        <ToggleButton IsChecked="{Binding IsMaskInvertEnabled}" Click="MaskInvert_ToggleButton_Checked" ToolTipService.InitialShowDelay="200" >
+                            <userControls:FontAwesome  IconStyle="Solid" Padding="2" >
+                                <userControls:FontAwesome.Style>
+                                    <Style TargetType="{x:Type userControls:FontAwesome}" BasedOn="{StaticResource {x:Type userControls:FontAwesome}}">
+                                        <Setter Property="Icon" Value="&#xf004;" />
+                                        <Setter Property="Color" Value="{StaticResource  ButtonForeground}" />
+                                        <Setter Property="Background" Value="{StaticResource ButtonBackground}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsMaskInvertEnabled, ElementName=UI}" Value="True">
+                                                <Setter Property="Icon" Value="&#xf004;" />
+                                                <Setter Property="Color" Value="{StaticResource ButtonBackground}" />
+                                                <Setter Property="Background" Value="{StaticResource ButtonForeground}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </userControls:FontAwesome.Style>
+                            </userControls:FontAwesome>
+                            <ToggleButton.Style>
+                                <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource ToggleButtonBasic}">
+                                    <Setter Property="ToolTip" Value="Mask Mode - Discard Mask" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsMaskInvertEnabled, ElementName=UI}" Value="True">
+                                            <Setter Property="ToolTip" Value="Mask Mode - Keep Mask" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>
+                        </ToggleButton>
+
+                        <!--Clear Mask-->
+                        <Button DockPanel.Dock="Right" Command="{Binding MaskClearCommand}" ToolTip="Clear Mask" ToolTipService.InitialShowDelay="200">
+                            <userControls:FontAwesome Icon="&#xf05e;" IconStyle="Light"  />
+                        </Button>
+                    </UniformGrid>
+
+                </DockPanel>
+            </StackPanel>
+
+
+            <Grid PreviewMouseLeftButtonDown="Control_PreviewMouseLeftButtonUp">
+                <Viewbox StretchDirection="{Binding ZoomDirection}" UseLayoutRounding="True" RenderOptions.BitmapScalingMode="Fant">
+                    <Grid Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" ClipToBounds="True" >
+                        <Image Source="{StaticResource PlaceholderImage}" Stretch="Uniform" Opacity=".2" Visibility="{Binding SourceImage, Converter={StaticResource InverseNullHiddenConverter}}"/>
+                        <Canvas x:Name="ImageCanvas" Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" Background="Transparent" ClipToBounds="True" RenderOptions.BitmapScalingMode="Fant">
+                            <Border x:Name="Container" Canvas.Left="0" Canvas.Top="0" Width="{Binding ImageWidth}" Height="{Binding ImageHeight}">
+                                <Image Source="{Binding SourceImage.Image}" Stretch="Uniform"/>
+                            </Border>
+                        </Canvas>
+                        <InkCanvas x:Name="MaskCanvas"
+                             ForceCursor="True" 
+                             Cursor="Pen"
+                             Background="Transparent"
+                             PreviewMouseLeftButtonUp="MaskCanvas_MouseLeftButtonUp"
+                             PreviewMouseLeftButtonDown="MaskCanvas_MouseLeftButtonDown"
+                             PreviewMouseMove="MaskCanvas_PreviewMouseMove"
+                             PreviewMouseWheel="MaskCanvas_OnMouseWheel"
+                             IsEnabled="{Binding HasSourceResult}"
+                             EditingMode="{Binding MaskEditingMode}" 
+                             DefaultDrawingAttributes="{Binding MaskAttributes}" 
+                             Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Open" InputGestureText="Ctrl+O" Command="{Binding LoadImageCommand}" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf1c5;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyImageCommand}" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0c5;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Paste" InputGestureText="Ctrl+V" Command="{Binding PasteImageCommand}" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0ea;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Save" InputGestureText="Ctrl+S" Command="{Binding SaveImageCommand}" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator Margin="0, 10" Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <MenuItem Header="Mask Open" InputGestureText="Ctrl+B" Command="{Binding MaskLoadCommand}" Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf1c5;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Mask Undo" InputGestureText="Ctrl+Z" Command="{Binding MaskUndoCommand}" Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf2ea;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Mask Redo" InputGestureText="Ctrl+Y" Command="{Binding MaskRedoCommand}"  Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf2f9;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Mask Save" InputGestureText="Ctrl+M" Command="{Binding MaskSaveCommand}"  Visibility="{Binding IsMaskEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <MenuItem.Icon>
+                                        <userControls:FontAwesome Icon="&#xf0c7;" IconStyle="Light" Size="15" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+                    </Grid>
+                </Viewbox>
+
+                <Grid VerticalAlignment="Bottom" Margin="0,0,0,10" Visibility="{Binding SourceImage, Converter={StaticResource InverseNullVisibilityConverter}}">
+                    <TextBlock Text="Drag &amp; Drop Your Image Here" TextAlignment="Center" Opacity=".6"/>
+                </Grid>
+            </Grid>
+
+
+
+        </DockPanel>
+    </Border>
+</UserControl>

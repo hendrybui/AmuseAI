@@ -1,0 +1,116 @@
+﻿<UserControl x:Class="Amuse.UI.UserControls.OutputToolbarControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:views="clr-namespace:Amuse.UI.Views"
+             xmlns:controls="clr-namespace:Amuse.UI.UserControls"
+             mc:Ignorable="d" Name="UI">
+    <DockPanel DataContext="{Binding ElementName=UI}" Background="{StaticResource ControlDarkerBackground}" Height="50">
+
+        <Grid >
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--Left-->
+            <Grid Grid.Column="0">
+                <StackPanel  VerticalAlignment="Center"  >
+                    <StackPanel Orientation="Horizontal" Margin="5,0,0,0" VerticalAlignment="Center" >
+                        <TextBlock Text="Elapsed: " Style="{StaticResource FieldTextBlockStyle}" Margin="0,1,0,0" />
+                        <TextBlock Text="{Binding Statistics.TotalElapsed.TotalSeconds, FallbackValue=0.0, StringFormat={}{0:F1}}" VerticalAlignment="Center" />
+                        <TextBlock Text=" s" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="5,0,0,0" VerticalAlignment="Center" >
+                        <TextBlock Text="Compute: " Style="{StaticResource FieldTextBlockStyle}" Margin="0,1,0,0" />
+                        <TextBlock Text="{Binding Statistics.Elapsed.TotalSeconds, FallbackValue=0.0, StringFormat={}{0:F1}}" VerticalAlignment="Center" />
+                        <TextBlock Text=" s" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="5,0,0,0" VerticalAlignment="Center" Visibility="{Binding IsIterationsEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="Performance: " Style="{StaticResource FieldTextBlockStyle}" Margin="0,1,0,0" />
+                        <TextBlock Text="{Binding Statistics.IterationsSec, FallbackValue=0.0, StringFormat={}{0:F2}}" VerticalAlignment="Center" />
+                        <TextBlock Text=" it/s" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!--Middle-->
+            <Grid Grid.Column="1">
+                <UniformGrid Columns="2" Width="270" Margin="0,3,0,0">
+                    <Button Command="{Binding EnableHistoryViewCommand}" CommandParameter="{StaticResource False}" IsEnabled="{Binding IsHistoryView}" >
+                        <StackPanel Orientation="Horizontal">
+                            <controls:FontAwesome Icon="&#xf26c;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="Output View" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding EnableHistoryViewCommand}" CommandParameter="{StaticResource True}" IsEnabled="{Binding IsHistoryView, Converter={StaticResource InverseBoolConverter}}"  >
+                        <StackPanel Orientation="Horizontal">
+                            <controls:FontAwesome Icon="&#xf03a;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="18" VerticalAlignment="Center"/>
+                            <TextBlock Text="History View" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </UniformGrid>
+            </Grid>
+
+            <!--Right-->
+            <Grid Grid.Column="2"  HorizontalAlignment="Right">
+
+                <!--Output-->
+                <!--<StackPanel  Visibility="{Binding IsHistoryView, Converter={StaticResource InverseBooleanToVisibilityConverter}}" VerticalAlignment="Bottom">
+                    <TextBlock Text="Output Zoom" HorizontalAlignment="Center"  Style="{StaticResource FieldTextBlockStyle}"/>
+                    <ComboBox ItemsSource="{Binding Source={StaticResource StretchDirection}}" SelectedItem="{Binding Settings.DefaultZoomDirection}" Width="90" />
+                </StackPanel>-->
+
+                <!--History-->
+                <StackPanel Visibility="{Binding IsHistoryView, Converter={StaticResource BooleanToVisibilityConverter}}" Orientation="Horizontal" VerticalAlignment="Bottom">
+
+                    <UniformGrid Columns="2" Height="30" VerticalAlignment="Bottom" Margin="0,0,10,0">
+
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=SaveHistoryCommand}" Style="{StaticResource InfoButtonStyle}" Padding="10,3" ToolTip="Save History As Video" >
+                            <controls:FontAwesome Icon="&#xf87c;" IconStyle="Light" Color="{StaticResource InfoColour}"/>
+                        </Button>
+
+                        <Button Command="{Binding RelativeSource={RelativeSource FindAncestor,AncestorType={x:Type views:INavigatable}}, Path=ClearHistoryCommand}" Style="{StaticResource DangerButtonStyle}" Padding="10,3"  ToolTip="Clear History" Margin="2,0,0,0">
+                            <controls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"/>
+                        </Button>
+
+                    </UniformGrid>
+
+
+
+                    <StackPanel Orientation="Vertical" VerticalAlignment="Bottom"  >
+                        <TextBlock Text="Columns" HorizontalAlignment="Center" Style="{StaticResource FieldTextBlockStyle}"/>
+                        <ComboBox Width="80" SelectedValue="{Binding HistoryColumns}" SelectedValuePath="Content" >
+                            <ComboBoxItem>1</ComboBoxItem>
+                            <ComboBoxItem>2</ComboBoxItem>
+                            <ComboBoxItem>3</ComboBoxItem>
+                            <ComboBoxItem>4</ComboBoxItem>
+                            <ComboBoxItem>5</ComboBoxItem>
+                            <ComboBoxItem>6</ComboBoxItem>
+                            <ComboBoxItem>7</ComboBoxItem>
+                            <ComboBoxItem>8</ComboBoxItem>
+                            <ComboBoxItem>9</ComboBoxItem>
+                            <ComboBoxItem>10</ComboBoxItem>
+                        </ComboBox>
+                    </StackPanel>
+
+                </StackPanel>
+            </Grid>
+
+
+        </Grid>
+
+
+
+
+
+
+
+
+
+
+    </DockPanel>
+</UserControl>

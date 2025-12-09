@@ -1,0 +1,680 @@
+﻿<views:SettingsViewBase  x:Class="Amuse.UI.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             xmlns:clr="clr-namespace:System;assembly=mscorlib" 
+             xmlns:views="clr-namespace:Amuse.UI.Views" 
+             x:Name="UI"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1366"
+             d:DataContext="{d:DesignInstance Type=views:SettingsView}" >
+    <Grid DataContext="{Binding ElementName=UI}"  >
+
+        <Grid.Resources>
+            <clr:String x:Key="String_Help_ExecutionDevice" >? ExecutionDevice</clr:String>
+            <clr:String x:Key="String_Help_MemoryMode" >? MemoryMode</clr:String>
+            <clr:String x:Key="String_Help_ModelCacheMode" >? ModelCacheModel</clr:String>
+            <clr:String x:Key="String_Help_DefaultModelDirectory" >? DefaultModelDirectory</clr:String>
+            <clr:String x:Key="String_Help_ImageDefaultDirectory" >? ImageDefaultDirectory</clr:String>
+            <clr:String x:Key="String_Help_ImageSaveDirectory" >? ImageSaveDirectory</clr:String>
+            <clr:String x:Key="String_Help_ImageAutoSaveDirectory" >? ImageAutoSaveDirectory</clr:String>
+            <clr:String x:Key="String_Help_VideoDefaultDirectory" >? VideoDefaultDirectory</clr:String>
+            <clr:String x:Key="String_Help_VideoSaveDirectory" >? VideoSaveDirectory</clr:String>
+            <clr:String x:Key="String_Help_VideoAutoSaveDirectory" >? VideoAutoSaveDirectory</clr:String>
+            <clr:String x:Key="String_Help_StableDiffusionRealtimeRefreshRate" >? RealtimeRefreshRate</clr:String>
+            <clr:String x:Key="String_Help_StableDiffusionRealtimeHistoryEnabled" >? RealtimeHistoryEnabled</clr:String>
+            <clr:String x:Key="String_Help_StableDiffusionModelEvaluationMode">? Try filter explicit content</clr:String>
+            <clr:String x:Key="String_Help_StableDiffusionIsPreviewEnabled">? Show step preview</clr:String>
+        </Grid.Resources>
+
+        <DockPanel Margin="100,50,100,50" MaxWidth="1200"  MaxHeight="800" >
+
+            <DockPanel DockPanel.Dock="Top">
+                <StackPanel DockPanel.Dock="Right" Width="200">
+                    <Button Content="Save Changes" Height="30" Command="{Binding SaveCommand}" Style="{StaticResource InfoButtonStyle}"/>
+                </StackPanel>
+                <TextBlock Text="Settings" FontSize="22" />
+            </DockPanel>
+
+            <TabControl TabStripPlacement="Left" Style="{StaticResource LeftTabControl}" SelectedIndex="0" >
+
+                <!--General Settings-->
+                <TabItem DockPanel.Dock="Top" Margin="0,8,0,0">
+                    <TabItem.Header>
+                        <DockPanel Width="200" Height="30" >
+                            <TextBlock Text="General" TextAlignment="Center" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </TabItem.Header>
+
+                    <GroupBox Margin="6,0,0,0" Padding="5">
+                        <GroupBox.Header>
+                            <TextBlock Text="General Settings" />
+                        </GroupBox.Header>
+
+                        <StackPanel>
+
+                            <!--Execution Device-->
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Left" MinWidth="300">
+                                    <StackPanel>
+                                        <TextBlock Text="Execution Device" Style="{StaticResource FieldTextBlockStyle}" />
+                                        <userControls:DevicePickerControl
+                                            SelectedDevice="{Binding Settings.DefaultExecutionDevice, Mode=TwoWay}"
+                                            DeviceId="{Binding Settings.DefaultDeviceId, Mode=TwoWay}"
+                                            Provider="{Binding Settings.DefaultProvider, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_ExecutionDevice}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                            <!--Model Cache Mode-->
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Left" MinWidth="300">
+                                    <StackPanel>
+                                        <TextBlock Text="Model Cache Mode" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <ComboBox ItemsSource="{Binding Source={StaticResource ModelCacheMode}}" SelectedItem="{Binding Settings.ModelCacheMode}" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_ModelCacheMode}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                            <!--Default Model Directory-->
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Left" MinWidth="300">
+                                    <StackPanel>
+                                        <TextBlock Text="Maximum History Items" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <TextBox Text="{Binding Settings.HistoryMaxItems, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_DefaultModelDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                            <!--Default Model Directory-->
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Left" MinWidth="550">
+                                    <StackPanel>
+                                        <TextBlock Text="Default Model Directory" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding Settings.DirectoryModel, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_DefaultModelDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                            <!--Hardware Acceleration-->
+                            <CheckBox Content="UI Hardware Acceleration" IsChecked="{Binding Settings.RenderMode, Converter={StaticResource BooleanToRenderModeConverter}}" Margin="0,10,0,0"/>
+
+                            <!--UseLegacyDeviceDetection-->
+                            <CheckBox Content="Use Legacy Device Detection" IsChecked="{Binding Settings.UseLegacyDeviceDetection}" Margin="0,10,0,0"/>
+
+                            <!--IsUpdateEnabled-->
+                            <CheckBox Content="Automatically Check For Updates" IsChecked="{Binding Settings.IsUpdateEnabled}" Margin="0,10,0,0"/>
+                        </StackPanel>
+
+
+                    </GroupBox>
+
+                </TabItem>
+
+                <!--Image Settings-->
+                <TabItem DockPanel.Dock="Top" Margin="0,1,0,0">
+                    <TabItem.Header>
+                        <DockPanel Width="200" Height="30" >
+                            <TextBlock Text="Images" TextAlignment="Center" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </TabItem.Header>
+
+                    <GroupBox Margin="6,0,0,0" Padding="5">
+                        <GroupBox.Header>
+                            <TextBlock Text="Image Settings" />
+                        </GroupBox.Header>
+
+                        <StackPanel>
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Left" MinWidth="550">
+                                    <StackPanel>
+                                        <TextBlock Text="Image Default Directory" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding Settings.DirectoryImage, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_ImageDefaultDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                            <DockPanel Margin="0,5,0,0">
+                                <Grid DockPanel.Dock="Left" MinWidth="550">
+                                    <StackPanel>
+                                        <TextBlock Text="Image Save Directory" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding Settings.DirectoryImageSave, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_ImageSaveDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+
+                            <CheckBox DockPanel.Dock="Left" x:Name="CheckBoxImageAutoSave" Content="Enable Auto-Save" IsChecked="{Binding Settings.AutoSaveImage}" Margin="0,5,0,0"/>
+
+                            <DockPanel Margin="0,5,0,0">
+                                <Grid DockPanel.Dock="Left" MinWidth="550">
+                                    <StackPanel>
+                                        <TextBlock Text="Auto-Save Directory" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding Settings.DirectoryImageAutoSave, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}" IsRequired="{Binding IsChecked, ElementName=CheckBoxImageAutoSave}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_ImageAutoSaveDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                        </StackPanel>
+
+                    </GroupBox>
+                </TabItem>
+
+                <!--Video Settings-->
+                <TabItem DockPanel.Dock="Top" Margin="0,1,0,0">
+                    <TabItem.Header>
+                        <DockPanel Width="200" Height="30" >
+                            <TextBlock Text="Videos" TextAlignment="Center" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </TabItem.Header>
+
+                    <GroupBox Margin="6,0,0,0" Padding="5">
+                        <GroupBox.Header>
+                            <TextBlock Text="Video Settings" />
+                        </GroupBox.Header>
+
+                        <StackPanel >
+                            <DockPanel >
+                                <Grid DockPanel.Dock="Left" MinWidth="550">
+                                    <StackPanel>
+                                        <TextBlock Text="Video Default Directory" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding Settings.DirectoryVideo, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_VideoDefaultDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                            <DockPanel Margin="0,5,0,0">
+                                <Grid DockPanel.Dock="Left" MinWidth="550">
+                                    <StackPanel>
+                                        <TextBlock Text="Save Directory" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding Settings.DirectoryVideoSave, Mode=TwoWay}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_VideoSaveDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+
+                            <CheckBox x:Name="CheckBoxVideoAutoSave" Content="Enable Video Auto-Save" IsChecked="{Binding Settings.AutoSaveVideo}" Margin="0,5,0,0"/>
+
+                            <DockPanel Margin="0,5,0,0">
+                                <Grid DockPanel.Dock="Left" MinWidth="550">
+                                    <StackPanel>
+                                        <TextBlock Text="Video Auto-Save Directory" Style="{StaticResource FieldTextBlockStyle}"/>
+                                        <userControls:FilePickerTextBox IsFolderPicker="True" FileName="{Binding Settings.DirectoryVideoAutoSave, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=CheckBoxVideoAutoSave}" IsRequired="{Binding IsChecked, ElementName=CheckBoxVideoAutoSave}"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Grid>
+                                    <TextBlock Text="{StaticResource String_Help_VideoAutoSaveDirectory}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Hidden"/>
+                                </Grid>
+                            </DockPanel>
+
+                        </StackPanel>
+
+                    </GroupBox>
+
+                </TabItem>
+
+                <!--Stable Diffusion Settings-->
+                <TabItem DockPanel.Dock="Top" Margin="0,1,0,0">
+                    <TabItem.Header>
+                        <DockPanel Width="200" Height="30" >
+                            <TextBlock Text="Stable Diffusion" TextAlignment="Center" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </TabItem.Header>
+
+                    <GroupBox Margin="6,0,0,0" Padding="5">
+                        <GroupBox.Header>
+                            <TextBlock Text="Stable Diffusion Settings" />
+                        </GroupBox.Header>
+
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Right" MinWidth="320">
+                                <TextBlock DockPanel.Dock="Top" Text="Installed Models" Style="{StaticResource FieldTextBlockStyle}"/>
+                                <UniformGrid DockPanel.Dock="Bottom" Columns="3" Height="30">
+                                    <Button  Command="{Binding AddStableDiffusionModelCommand}" ToolTip="Add New Model">
+                                        <userControls:FontAwesome Icon="&#xf0fe;" IconStyle="Light" Color="{StaticResource SuccessColour}"/>
+                                    </Button>
+                                    <Button  Command="{Binding UpdateStableDiffusionModelCommand}" ToolTip="Model Settings">
+                                        <userControls:FontAwesome Icon="&#xf085;" IconStyle="Light" />
+                                    </Button>
+                                    <Button  Command="{Binding RemoveStableDiffusionModelCommand}" ToolTip="Remove Model">
+                                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"/>
+                                    </Button>
+                                </UniformGrid>
+                                <ListBox ItemsSource="{Binding Settings.StableDiffusionModelSets}" SelectedItem="{Binding SelectedStableDiffusionModel}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListBoxItem}">
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Margin" Value="0"/>
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush }" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                        <Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                                                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" />
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger  Property="IsSelected" Value="True" >
+                                                    <Setter Property="Background" Value="{StaticResource ControlMouseOverBackground}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource AccentColour2}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel DockPanel.Dock="Left">
+                                                <TextBlock Text="{Binding Name}" FontSize="12" Margin="3,0,0,0" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding ModelSet.PipelineType}" TextAlignment="Right" Margin="0,0,2,2" Opacity=".7" FontSize="11"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+
+                            <DockPanel>
+
+                                <StackPanel Margin="0,5,0,0" DockPanel.Dock="Top">
+
+                                    <DockPanel>
+                                        <Grid DockPanel.Dock="Left" MinWidth="200">
+                                            <StackPanel>
+                                                <TextBlock Text="Realtime Refresh Rate (ms)" Style="{StaticResource FieldTextBlockStyle}"/>
+                                                <TextBox Text="{Binding Settings.RealtimeRefreshRate}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        <Grid>
+                                            <TextBlock Text="{StaticResource String_Help_StableDiffusionRealtimeRefreshRate}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Collapsed"/>
+                                        </Grid>
+                                    </DockPanel>
+
+                                    <DockPanel>
+                                        <Grid DockPanel.Dock="Left" MinWidth="200">
+                                            <CheckBox IsChecked="{Binding Settings.RealtimeHistoryEnabled}" Content="Realtime History" Margin="0,13,0,0"/>
+                                        </Grid>
+                                        <Grid>
+                                            <TextBlock Text="{StaticResource String_Help_StableDiffusionRealtimeHistoryEnabled}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Collapsed"/>
+                                        </Grid>
+                                    </DockPanel>
+
+                                    <!--<DockPanel>
+                                        <Grid DockPanel.Dock="Left" MinWidth="200">
+                                            <CheckBox Content="Content Moderation" IsChecked="{Binding Settings.IsModelEvaluationModeEnabled, Converter={StaticResource InverseBoolConverter}}" />
+                                        </Grid>
+                                        <Grid>
+                                            <TextBlock Text="{StaticResource String_Help_StableDiffusionModelEvaluationMode}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Collapsed"/>
+                                        </Grid>
+                                    </DockPanel>
+
+                                    <DockPanel IsEnabled="{Binding Settings.IsModelEvaluationModeEnabled}" >
+                                        <Grid DockPanel.Dock="Left" MinWidth="200">
+                                            <CheckBox IsChecked="{Binding Settings.IsPreviewEnabled}"  Margin="0,0,0,0">
+                                                <TextBlock>
+                                                    <Run Text="Step Preview " />
+                                                    <Run Text="(Experimental)"  FontStyle="Italic" FontSize="11"/>
+                                                </TextBlock>
+                                            </CheckBox>
+                                        </Grid>
+                                        <Grid>
+                                            <TextBlock Text="{StaticResource String_Help_StableDiffusionIsPreviewEnabled}" Style="{StaticResource FieldTextBlockStyle}" VerticalAlignment="Center" Margin="10,16,0,0" Visibility="Collapsed"/>
+                                        </Grid>
+                                    </DockPanel>-->
+
+                                </StackPanel>
+
+                                <!--Prompts-->
+                                <DockPanel DockPanel.Dock="Left" Width="350" Margin="0,50,0,0">
+                                    <TextBlock DockPanel.Dock="Top" Text="Saved Prompts" Style="{StaticResource FieldTextBlockStyle}"/>
+                                    <UniformGrid DockPanel.Dock="Bottom" Columns="3" Height="30">
+                                        <Button  Command="{Binding AddPromptInputModelCommand}" CommandParameter="True" ToolTip="Add New Prompt">
+                                            <userControls:FontAwesome Icon="&#xf0fe;" IconStyle="Light" Color="{StaticResource SuccessColour}"/>
+                                        </Button>
+                                        <Button Command="{Binding UpdatePromptInputModelCommand}" ToolTip="Update Prompt">
+                                            <userControls:FontAwesome Icon="&#xf303;" IconStyle="Light" />
+                                        </Button>
+                                        <Button Command="{Binding RemovePromptInputModelCommand}" CommandParameter="False" ToolTip="Remove Prompt">
+                                            <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"/>
+                                        </Button>
+                                    </UniformGrid>
+                                    <ListBox ItemsSource="{Binding Settings.Prompts}" SelectedItem="{Binding SelectedPromptInputModel}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="{x:Type ListBoxItem}">
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="Margin" Value="0"/>
+                                                <Setter Property="BorderThickness" Value="1" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush }" />
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                            <Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                                                                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" />
+                                                            </Border>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <Trigger  Property="IsSelected" Value="True" >
+                                                        <Setter Property="Background" Value="{StaticResource ControlMouseOverBackground}" />
+                                                        <Setter Property="BorderBrush" Value="{StaticResource AccentColour2}" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <DockPanel Margin="2" MinHeight="25">
+                                                    <DockPanel DockPanel.Dock="Left" Width="40" LastChildFill="False">
+                                                        <TextBlock DockPanel.Dock="Top" Text="{Binding Type}" Opacity=".7" FontSize="10"/>
+                                                        <UniformGrid DockPanel.Dock="Bottom" Columns="2" Visibility="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <Button Command="{Binding MovePromptInputModelCommand, ElementName=UI}" CommandParameter="{StaticResource True}"  Padding="0" >
+                                                                <userControls:FontAwesome Icon="&#xf0d8;" IconStyle="Solid" Size="10" />
+                                                            </Button>
+                                                            <Button Command="{Binding MovePromptInputModelCommand, ElementName=UI}" CommandParameter="{StaticResource False}" Padding="0">
+                                                                <userControls:FontAwesome Icon="&#xf0d7;" IconStyle="Solid" Size="10" />
+                                                            </Button>
+                                                        </UniformGrid>
+                                                    </DockPanel>
+
+                                                    <TextBlock Text="{Binding Prompt}" FontSize="10" Margin="3,0,0,0"  TextWrapping="Wrap"/>
+                                                </DockPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                </DockPanel>
+
+                                <TextBlock />
+                            </DockPanel>
+                        </DockPanel>
+
+                    </GroupBox>
+
+                </TabItem>
+
+                <!--ControlNet Settings-->
+                <TabItem DockPanel.Dock="Top" Margin="0,1,0,0">
+                    <TabItem.Header>
+                        <DockPanel Width="200" Height="30" >
+                            <TextBlock Text="ControlNet" TextAlignment="Center" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </TabItem.Header>
+
+                    <GroupBox Margin="6,0,0,0" Padding="5">
+                        <GroupBox.Header>
+                            <TextBlock Text="ControlNet Settings" />
+                        </GroupBox.Header>
+
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Right" MinWidth="320">
+                                <TextBlock DockPanel.Dock="Top" Text="Installed Models" Style="{StaticResource FieldTextBlockStyle}"/>
+                                <UniformGrid DockPanel.Dock="Bottom" Columns="3" Height="30">
+                                    <Button  Command="{Binding AddControlNetModelCommand}" ToolTip="Add New Model">
+                                        <userControls:FontAwesome Icon="&#xf0fe;" IconStyle="Light" Color="{StaticResource SuccessColour}"/>
+                                    </Button>
+                                    <Button  Command="{Binding UpdateControlNetModelCommand}" ToolTip="Model Settings">
+                                        <userControls:FontAwesome Icon="&#xf085;" IconStyle="Light" />
+                                    </Button>
+                                    <Button  Command="{Binding RemoveControlNetModelCommand}" ToolTip="Remove Model">
+                                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"/>
+                                    </Button>
+                                </UniformGrid>
+                                <ListBox ItemsSource="{Binding Settings.ControlNetModelSets}" SelectedItem="{Binding SelectedControlNetModel}" >
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListBoxItem}">
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Margin" Value="0"/>
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush }" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                        <Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                                                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" />
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger  Property="IsSelected" Value="True" >
+                                                    <Setter Property="Background" Value="{StaticResource ControlMouseOverBackground}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource AccentColour2}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel >
+                                                <StackPanel DockPanel.Dock="Left">
+                                                    <TextBlock Text="{Binding Name}" FontSize="12" Margin="3,0,0,0" FontWeight="Medium"/>
+                                                </StackPanel>
+                                                <StackPanel DockPanel.Dock="Right" Margin="2" Opacity=".7" TextBlock.FontSize="11">
+                                                    <TextBlock Text="{Binding Type}" TextAlignment="Right" />
+                                                </StackPanel>
+                                                <TextBlock />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+
+
+                            <DockPanel>
+                                <TextBlock Text="No ControlNet Settings Found" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </DockPanel>
+
+                        </DockPanel>
+
+                    </GroupBox>
+
+                </TabItem>
+
+                <!--Feature Extractor Settings-->
+                <TabItem DockPanel.Dock="Top" Margin="0,1,0,0">
+                    <TabItem.Header>
+                        <DockPanel Width="200" Height="30" >
+                            <TextBlock Text="Feature Extractor" TextAlignment="Center" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </TabItem.Header>
+                    <GroupBox Margin="6,0,0,0" Padding="5">
+                        <GroupBox.Header>
+                            <TextBlock Text="Feature Extractor Settings" />
+                        </GroupBox.Header>
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Right" MinWidth="320">
+                                <TextBlock DockPanel.Dock="Top" Text="Installed Models" Style="{StaticResource FieldTextBlockStyle}"/>
+                                <UniformGrid DockPanel.Dock="Bottom" Columns="3" Height="30">
+                                    <Button  Command="{Binding AddFeatureExtractorModelCommand}" ToolTip="Add New Model">
+                                        <userControls:FontAwesome Icon="&#xf0fe;" IconStyle="Light" Color="{StaticResource SuccessColour}"/>
+                                    </Button>
+                                    <Button  Command="{Binding UpdateFeatureExtractorModelCommand}" ToolTip="Model Settings">
+                                        <userControls:FontAwesome Icon="&#xf085;" IconStyle="Light" />
+                                    </Button>
+                                    <Button  Command="{Binding RemoveFeatureExtractorModelCommand}" ToolTip="Remove Model">
+                                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"/>
+                                    </Button>
+                                </UniformGrid>
+                                <ListBox ItemsSource="{Binding Settings.FeatureExtractorModelSets}" SelectedItem="{Binding SelectedFeatureExtractorModel}" >
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListBoxItem}">
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Margin" Value="0"/>
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush }" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                        <Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                                                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" />
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger  Property="IsSelected" Value="True" >
+                                                    <Setter Property="Background" Value="{StaticResource ControlMouseOverBackground}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource AccentColour2}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel >
+                                                <StackPanel DockPanel.Dock="Left">
+                                                    <TextBlock Text="{Binding Name}" FontSize="12" Margin="3,0,0,0" FontWeight="Medium"/>
+                                                </StackPanel>
+                                                <StackPanel DockPanel.Dock="Right" Margin="2" Opacity=".7" TextBlock.FontSize="11">
+                                                    <TextBlock Text="{Binding Type}" TextAlignment="Right" />
+                                                    <TextBlock Text="{Binding ControlNetType}" TextAlignment="Right" />
+                                                </StackPanel>
+                                                <TextBlock />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+
+                            <DockPanel>
+                                <TextBlock Text="No Feature Extractor Settings Found" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </DockPanel>
+
+                        </DockPanel>
+
+                    </GroupBox>
+                </TabItem>
+
+                <!--Upscaler Settings-->
+                <TabItem DockPanel.Dock="Top" Margin="0,1,0,0">
+                    <TabItem.Header>
+                        <DockPanel Width="200" Height="30" >
+                            <TextBlock Text="Upscaler" TextAlignment="Center" VerticalAlignment="Center" />
+                        </DockPanel>
+                    </TabItem.Header>
+                    <GroupBox Margin="6,0,0,0" Padding="5">
+                        <GroupBox.Header>
+                            <TextBlock Text="Upscaler Settings" />
+                        </GroupBox.Header>
+                        <DockPanel>
+                            <DockPanel DockPanel.Dock="Right" MinWidth="320">
+                                <TextBlock DockPanel.Dock="Top" Text="Installed Models" Style="{StaticResource FieldTextBlockStyle}"/>
+                                <UniformGrid DockPanel.Dock="Bottom" Columns="3" Height="30">
+                                    <Button  Command="{Binding AddUpscaleModelCommand}" ToolTip="Add New Model">
+                                        <userControls:FontAwesome Icon="&#xf0fe;" IconStyle="Light" Color="{StaticResource SuccessColour}"/>
+                                    </Button>
+                                    <Button  Command="{Binding UpdateUpscaleModelCommand}" ToolTip="Model Settings">
+                                        <userControls:FontAwesome Icon="&#xf085;" IconStyle="Light" />
+                                    </Button>
+                                    <Button  Command="{Binding RemoveUpscaleModelCommand}" ToolTip="Remove Model">
+                                        <userControls:FontAwesome Icon="&#xf2ed;" IconStyle="Light" Color="{StaticResource DangerColour}"/>
+                                    </Button>
+                                </UniformGrid>
+                                <ListBox ItemsSource="{Binding Settings.UpscaleModelSets}" SelectedItem="{Binding SelectedUpscaleModel}" >
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListBoxItem}">
+                                            <Setter Property="Padding" Value="0" />
+                                            <Setter Property="Margin" Value="0"/>
+                                            <Setter Property="BorderThickness" Value="1" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush }" />
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                        <Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                                                            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" />
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger  Property="IsSelected" Value="True" >
+                                                    <Setter Property="Background" Value="{StaticResource ControlMouseOverBackground}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource AccentColour2}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <DockPanel >
+                                                <StackPanel DockPanel.Dock="Left">
+                                                    <TextBlock Text="{Binding Name}" FontSize="12" Margin="3,0,0,0" FontWeight="Medium"/>
+                                                </StackPanel>
+                                                <StackPanel DockPanel.Dock="Right" Margin="2" Opacity=".7" TextBlock.FontSize="11">
+                                                    <TextBlock Text="{Binding Type}" TextAlignment="Right" />
+                                                    <TextBlock Text="{Binding Type}" TextAlignment="Right" />
+                                                </StackPanel>
+                                                <TextBlock />
+                                            </DockPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+
+                            <DockPanel>
+                                <TextBlock Text="No Upscale Settings Found" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </DockPanel>
+
+                        </DockPanel>
+
+                    </GroupBox>
+                </TabItem>
+
+
+                <!--Footer-->
+                <TabItem DockPanel.Dock="Bottom" Style="{StaticResource HiddenTabItem}" >
+                    <TabItem.Header>
+                        <Grid Width="200"  >
+                            <DockPanel Opacity=".7">
+                                <userControls:FontAwesome DockPanel.Dock="Top" Icon="&#xf535;" Size="35" IconStyle="SharpThin" HorizontalAlignment="Left" />
+                                <TextBlock DockPanel.Dock="Top" Text="Made in New Zealand" />
+                                <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom"  UseLayoutRounding="True" Orientation="Horizontal">
+                                    <TextBlock Text="Created By: " FontStyle="Italic"  FontSize="10" VerticalAlignment="Center" Margin="0,2,0,0" />
+                                    <userControls:HyperlinkControl Label="TensorStack Ltd" Link="https://www.tensorstack.ai" />
+                                </StackPanel>
+                            </DockPanel>
+                        </Grid>
+                    </TabItem.Header>
+                </TabItem>
+
+                <TabItem Style="{StaticResource HiddenTabItem}"  />
+            </TabControl>
+        </DockPanel>
+    </Grid>
+
+</views:SettingsViewBase>

@@ -1,0 +1,454 @@
+﻿<local:BaseWindow x:Class="Amuse.UI.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Amuse.UI.Windows"
+        xmlns:views="clr-namespace:Amuse.UI.Views"
+        xmlns:controls="clr-namespace:Amuse.UI.UserControls"
+        mc:Ignorable="d"
+        Width="1366"
+        Height="800"
+        MinWidth="820"
+        MinHeight="650"
+        Icon="/Images/Icon.ico" 
+        x:Name="UI" 
+        RenderOptions.BitmapScalingMode="Fant"
+        RenderOptions.ClearTypeHint="Enabled"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        TextOptions.TextHintingMode="Fixed"
+        SnapsToDevicePixels="True"
+        WindowStartupLocation="CenterOwner"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        Style="{StaticResource BaseWindow}">
+    <Grid DataContext="{Binding ElementName=UI}">
+        <TabControl Style="{StaticResource SplitTabControl}" SelectedIndex="{Binding NavigationMenuIndex}">
+            <TabItem HorizontalAlignment="Left" Visibility="Hidden">
+            </TabItem>
+
+            <!--Image Generation-->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <controls:FontAwesome Icon="&#xf03e;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="16"/>
+                        <TextBlock Text="Image Generation" FontSize="13" HorizontalAlignment="Center" Margin="5,0"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabControl Style="{StaticResource LeftTabControl}" TabStripPlacement="Left" Margin="2" SelectedIndex="{Binding NavigationImageSubmenuIndex}" SelectedValue="{Binding SelectedTabItem, Mode=OneWayToSource}" SelectedValuePath="Content">
+
+                    <!--TextToImageView-->
+                    <TabItem DockPanel.Dock="Top" Margin="0,90,0,0" Width="120">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf031;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Text To Image" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:TextToImageView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:TextToImageView.Style>
+                                <Style TargetType="{x:Type views:TextToImageView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationImageSubmenuIndex, ElementName=UI}" Value="0" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:TextToImageView.Style>
+                        </views:TextToImageView>
+                    </TabItem>
+
+                    <!--ImageToImageView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf03e;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Image To Image" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:ImageToImageView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:ImageToImageView.Style>
+                                <Style TargetType="{x:Type views:ImageToImageView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationImageSubmenuIndex, ElementName=UI}" Value="1" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:ImageToImageView.Style>
+                        </views:ImageToImageView>
+                    </TabItem>
+
+                    <!--PaintToImageView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10" >
+                                <controls:FontAwesome Icon="&#xf1fc;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Paint To Image" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:PaintToImageView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:PaintToImageView.Style>
+                                <Style TargetType="{x:Type views:PaintToImageView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationImageSubmenuIndex, ElementName=UI}" Value="2" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:PaintToImageView.Style>
+                        </views:PaintToImageView>
+                    </TabItem>
+
+                    <!--ImageInpaintView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf044;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Image Inpaint" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:ImageInpaintView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:ImageInpaintView.Style>
+                                <Style TargetType="{x:Type views:ImageInpaintView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationImageSubmenuIndex, ElementName=UI}" Value="3" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:ImageInpaintView.Style>
+                        </views:ImageInpaintView>
+                    </TabItem>
+
+                    <!--ImageUpscaleView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf424;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Upscaler" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:ImageUpscaleView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:ImageUpscaleView.Style>
+                                <Style TargetType="{x:Type views:ImageUpscaleView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationImageSubmenuIndex, ElementName=UI}" Value="4" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:ImageUpscaleView.Style>
+                        </views:ImageUpscaleView>
+                    </TabItem>
+
+                    <!--ImageFeatureExtractorView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf302;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Feature Extractor" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:ImageFeatureExtractorView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:ImageFeatureExtractorView.Style>
+                                <Style TargetType="{x:Type views:ImageFeatureExtractorView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationImageSubmenuIndex, ElementName=UI}" Value="5" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:ImageFeatureExtractorView.Style>
+                        </views:ImageFeatureExtractorView>
+                    </TabItem>
+
+                    <!--SystemInfoView-->
+                    <TabItem  DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Width="120" Style="{StaticResource HiddenTabItem}" >
+                        <TabItem.Header>
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,4,0">
+                                    <controls:FontAwesome Icon="&#xf625;" IconStyle="Light" Color="{StaticResource AccentColour2}" Size="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="System Info" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+                                </StackPanel>
+                                <controls:SystemInfoControl Width="120" Margin="0,2,0,0"/>
+                            </DockPanel>
+                        </TabItem.Header>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+
+            <!--Video Generation-->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <controls:FontAwesome Icon="&#xf008;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="16"/>
+                        <TextBlock Text="Video Generation" FontSize="13" HorizontalAlignment="Center" Margin="5,0"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <TabControl Style="{StaticResource LeftTabControl}" TabStripPlacement="Left" Margin="2" SelectedIndex="{Binding NavigationVideoSubmenuIndex}" SelectedValue="{Binding SelectedTabItem, Mode=OneWayToSource}" SelectedValuePath="Content">
+
+                    <!--TextToVideoView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,90,0,0"  Width="120" >
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf031;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Text To Video" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:TextToVideoView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:TextToVideoView.Style>
+                                <Style TargetType="{x:Type views:TextToVideoView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationVideoSubmenuIndex, ElementName=UI}" Value="0" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:TextToVideoView.Style>
+                        </views:TextToVideoView>
+                    </TabItem>
+
+                    <!--ImageToVideoView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0" Width="120">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf03e;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Image To Video" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:ImageToVideoView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:ImageToVideoView.Style>
+                                <Style TargetType="{x:Type views:ImageToVideoView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationVideoSubmenuIndex, ElementName=UI}" Value="1" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:ImageToVideoView.Style>
+                        </views:ImageToVideoView>
+                    </TabItem>
+
+                    <!--VideoToVideoView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0" Width="120">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf008;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Video To Video" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:VideoToVideoView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:VideoToVideoView.Style>
+                                <Style TargetType="{x:Type views:VideoToVideoView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationVideoSubmenuIndex, ElementName=UI}" Value="2" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:VideoToVideoView.Style>
+                        </views:VideoToVideoView>
+                    </TabItem>
+
+                    <!--FrameToFrameView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0" Width="120">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf87c;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Frame To Frame" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:FrameToFrameView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:FrameToFrameView.Style>
+                                <Style TargetType="{x:Type views:FrameToFrameView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationVideoSubmenuIndex, ElementName=UI}" Value="3" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:FrameToFrameView.Style>
+                        </views:FrameToFrameView>
+                    </TabItem>
+
+                    <!--VideoUpscaleView-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0" Width="120">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf424;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Upscaler" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:VideoUpscaleView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:VideoUpscaleView.Style>
+                                <Style TargetType="{x:Type views:VideoUpscaleView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationVideoSubmenuIndex, ElementName=UI}" Value="4" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:VideoUpscaleView.Style>
+                        </views:VideoUpscaleView>
+                    </TabItem>
+
+                    <!--VideoFeatureExtractor-->
+                    <TabItem  DockPanel.Dock="Top" Margin="0,1,0,0" Width="120">
+                        <TabItem.Header>
+                            <StackPanel Orientation="Vertical" Margin="5,10">
+                                <controls:FontAwesome Icon="&#xf302;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="20"/>
+                                <TextBlock Text="Feature Extractor" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </TabItem.Header>
+                        <views:VideoFeatureExtractorView Settings="{Binding Settings}" TaskbarItemInfo="{Binding TaskbarItemInfo}" IsGenerating="{Binding IsGenerating, Source={x:Static Application.Current}, Mode=OneWayToSource}" Padding="5,5,0,1"  >
+                            <views:VideoFeatureExtractorView.Style>
+                                <Style TargetType="{x:Type views:VideoFeatureExtractorView}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding NavigationVideoSubmenuIndex, ElementName=UI}" Value="5" >
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard Storyboard="{StaticResource SubmenuAnimation}"/>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </views:VideoFeatureExtractorView.Style>
+                        </views:VideoFeatureExtractorView>
+                    </TabItem>
+
+                    <!--SystemInfoView-->
+                    <TabItem  DockPanel.Dock="Bottom" VerticalAlignment="Bottom" Width="120" Style="{StaticResource HiddenTabItem}" >
+                        <TabItem.Header>
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,4,0">
+                                    <controls:FontAwesome Icon="&#xf625;" IconStyle="Light" Color="{StaticResource AccentColour2}" Size="14" VerticalAlignment="Center"/>
+                                    <TextBlock Text="System Info" Margin="3,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+                                </StackPanel>
+                                <controls:SystemInfoControl Width="120" Margin="0,2,0,0"/>
+                            </DockPanel>
+                        </TabItem.Header>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+
+
+            <!--Model Manager-->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <controls:FontAwesome Icon="&#xf5fd;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="16"/>
+                        <TextBlock Text="Model Manager" FontSize="13" HorizontalAlignment="Center" Margin="5,0"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:ModelManagerView Settings="{Binding Settings}" DefaultExecutionDevice="{Binding Settings.DefaultExecutionDevice}" Margin="0,2,0,0"/>
+            </TabItem>
+
+
+            <!--Settings Window-->
+            <TabItem DockPanel.Dock="Right" HorizontalAlignment="Right" Width="114" Margin="0,-2,1,0">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <StackPanel Orientation="Horizontal">
+                            <controls:FontAwesome Icon="&#xf013;" IconStyle="Solid" Color="{StaticResource AccentColour2}" Size="16"/>
+                            <TextBlock Text="Settings" FontSize="13" HorizontalAlignment="Center" Margin="5,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:SettingsView Settings="{Binding Settings, Mode=TwoWay}" />
+            </TabItem>
+
+        </TabControl>
+
+
+        <!--Logo Top Left-->
+        <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Background="{StaticResource BackgroundColour}" UseLayoutRounding="True" >
+            <Image Source="{StaticResource  PlaceholderImageSmall}" Margin="8,0,0,0" />
+            <Grid.Style>
+                <Style TargetType="{x:Type Grid}">
+                    <Setter Property="Width" Value="124" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="3" >
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="4" >
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+        </Grid>
+
+        <!--Dialog Overlay-->
+        <Rectangle Fill="#000000" IsHitTestVisible="False" Opacity="0.6" Visibility="{Binding Tag, Converter={StaticResource BooleanToHiddenConverter}, FallbackValue=Hidden}" />
+
+        <Grid.Style>
+            <Style TargetType="{x:Type Grid}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="0" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource MenuAnimation}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="1" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource MenuAnimation}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="2" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource MenuAnimation}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="3" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource MenuAnimation}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="4" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource MenuAnimation}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="5" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource MenuAnimation}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding NavigationMenuIndex, ElementName=UI}" Value="6" >
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard Storyboard="{StaticResource MenuAnimation}"/>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+
+        <!--<Grid.Background>
+            <ImageBrush ImageSource="{StaticResource ImageBackground}" Opacity="0.02" Stretch="UniformToFill"/>
+        </Grid.Background>-->
+    </Grid>
+
+</local:BaseWindow>

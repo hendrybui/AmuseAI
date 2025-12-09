@@ -1,0 +1,187 @@
+﻿<views:ViewBase x:Class="Amuse.UI.Views.ImageFeatureExtractorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:userControls="clr-namespace:Amuse.UI.UserControls"
+             xmlns:behaviors="clr-namespace:Amuse.UI.Behaviors"
+             xmlns:views="clr-namespace:Amuse.UI.Views"
+             x:Name="UI" 
+             mc:Ignorable="d" 
+             d:DesignWidth="1000" 
+             d:DesignHeight="800" 
+             d:DataContext="{d:DesignInstance Type=views:ImageFeatureExtractorView}">
+    <Grid DataContext="{Binding ElementName=UI}" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="360" />
+            <ColumnDefinition Width="4" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!--Control Panel-->
+        <DockPanel Grid.Column="0" Margin="3,3,3,0">
+            <UniformGrid DockPanel.Dock="Bottom" Columns="2" Height="30">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" Margin="0,0,1,0"/>
+                <Button Content="Execute" Command="{Binding GenerateCommand}" IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}" IsDefault="True" Margin="1,0,0,0"/>
+            </UniformGrid>
+            <DockPanel >
+                <userControls:FeatureExtractorPickerControl 
+                   DockPanel.Dock="Top"
+                   Settings="{Binding Settings}"
+                   LoadCommand="{Binding LoadModelCommand}"
+                   UnloadCommand="{Binding UnloadModelCommand}"
+                   IsEnabled="{Binding IsGenerating, Converter={StaticResource InverseBoolConverter}}"
+                   SelectedModel="{Binding SelectedModel, Mode=TwoWay}"/>
+                <DockPanel>
+
+                    <StackPanel DockPanel.Dock="Top" Visibility="{Binding SelectedModel.Template.IsFixedInstall, FallbackValue=Collapsed, Converter={StaticResource BooleanToVisibilityConverter}}">
+                     
+                        <UniformGrid Columns="2" IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}" >
+                            <Grid Margin="0,4,0,4">
+                                <userControls:SliderElement Text="Threshold" Value="{Binding Value}" Minimum="0" Maximum="1000" TickFrequency="1"/>
+                                <Grid.Style>
+                                    <Style TargetType="{x:Type Grid}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedModel.Name}" Value="Canny">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                            </Grid>
+
+                            <StackPanel Margin="0,0,0,0">
+                                <TextBlock Text="Edge Detection Mode" Style="{StaticResource FieldTextBlockStyle}" />
+                                <ComboBox SelectedIndex="{Binding Value}">
+                                    <ComboBoxItem Content="Sobel" />
+                                    <ComboBoxItem Content="Kayyali" />
+                                    <ComboBoxItem Content="Kirsch" />
+                                    <ComboBoxItem Content="Laplacian3x3" />
+                                    <ComboBoxItem Content="Laplacian5x5" />
+                                    <ComboBoxItem Content="LaplacianOfGaussian" />
+                                    <ComboBoxItem Content="Prewitt" />
+                                    <ComboBoxItem Content="RobertsCross" />
+                                    <ComboBoxItem Content="Robinson" />
+                                    <ComboBoxItem Content="Scharr" />
+                                </ComboBox>
+                                <StackPanel.Style>
+                                    <Style TargetType="{x:Type StackPanel}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding SelectedModel.Name}" Value="SoftEdge">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </StackPanel.Style>
+                            </StackPanel>
+
+                        </UniformGrid>
+
+
+
+                    </StackPanel>
+
+                    <StackPanel DockPanel.Dock="Top" Visibility="{Binding SelectedModel.Template.IsFixedInstall, FallbackValue=Collapsed, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+
+                        <UniformGrid  Columns="3" Margin="0,0,0,0" IsEnabled="{Binding SelectedModel.IsLoaded, FallbackValue=False, TargetNullValue=False}" >
+                            <StackPanel Margin="1,0,1,0" ToolTip="Upscale image in smaller tiles to save memory">
+                                <TextBlock Style="{StaticResource FieldTextBlockStyle}">Tile Mode</TextBlock>
+                                <ComboBox ItemsSource="{Binding Source={StaticResource TileMode}}" SelectedItem="{Binding TileMode}" Style="{StaticResource EnumComboBox}"/>
+                            </StackPanel>
+                            <StackPanel ToolTip="The maximum tile size to use">
+                                <TextBlock Text="Tile Size" Style="{StaticResource FieldTextBlockStyle}"/>
+                                <TextBox Text="{Binding TileSize, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding TileMode, Converter={StaticResource InverseEnumToBoolConverter}, ConverterParameter=None}" />
+                            </StackPanel>
+                            <StackPanel ToolTip="Pixels to overlap when joining tiles, reduces visible seams">
+                                <TextBlock Text="Tile Overlap" Style="{StaticResource FieldTextBlockStyle}"/>
+                                <TextBox Text="{Binding TileOverlap, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding TileMode, Converter={StaticResource InverseEnumToBoolConverter}, ConverterParameter=None}" Margin="4,0,0,0"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                    </StackPanel>
+
+                    <DockPanel Margin="0,4,0,0">
+                        <TextBlock DockPanel.Dock="Top" Text="Image Input" Style="{StaticResource FieldTextBlockStyle}"/>
+                        <userControls:ImageInputControl 
+                            Margin="0,0,0,40"
+                            ImageWidth="{Binding SourceImage.Image.Width}"
+                            ImageHeight="{Binding SourceImage.Image.Height}"
+                            SourceImage="{Binding SourceImage, Mode=OneWay}"
+                            VerticalAlignment="Top"
+                            Result="{Binding InputImage, Mode=TwoWay}"/>
+                    </DockPanel>
+
+                </DockPanel>
+            </DockPanel>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Width="4" />
+
+        <!--Content Panel-->
+        <Grid Grid.Column="2" Margin="3,0,0,0">
+            <DockPanel>
+
+                <!--Bottom Toolbar-->
+                <DockPanel DockPanel.Dock="Bottom">
+                    <userControls:OutputToolbarControl
+                        x:Name="ToolbarControl" 
+                        Settings="{Binding Settings}" 
+                        IsHistoryView="{Binding IsHistoryView, Mode=TwoWay}"
+                        Statistics="{Binding Statistics}"
+                        IsIterationsEnabled="False"/>
+                </DockPanel>
+
+                <Grid>
+
+                    <!--Result-->
+                    <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding IsHistoryView, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                        <userControls:FeatureExtractorResultControl
+                             Margin="30"
+                             FeatureExtractorInfo="{Binding FeatureExtractorInfo}"
+                             Source="{Binding InputImage}"
+                             Result="{Binding ResultImage}" 
+                             Progress="{Binding Progress}"
+                             SaveImageCommand="{Binding SaveImageCommand}"
+                             CopyImageCommand="{Binding CopyImageCommand}"
+                             RemoveImageCommand="{Binding RemoveImageCommand}"/>
+                    </Grid>
+
+                    <!--History-->
+                    <Grid Visibility="{Binding IsHistoryView, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}">
+                        <ListBox ItemsSource="{Binding}" ItemContainerStyle="{StaticResource ImageResultListBoxItem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" >
+                            <ListBox.DataContext>
+                                <CollectionViewSource Source="{Binding ImageResults, ElementName=UI}">
+                                    <CollectionViewSource.SortDescriptions>
+                                        <scm:SortDescription PropertyName="Timestamp" Direction="Descending" />
+                                    </CollectionViewSource.SortDescriptions>
+                                </CollectionViewSource>
+                            </ListBox.DataContext>
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="{Binding HistoryColumns, ElementName=ToolbarControl}" VerticalAlignment="Top" IsItemsHost="True"/>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
+                        <TextBlock Text="No Images Found" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Setter Property="Visibility" Value="Hidden" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ImageResults.Count, ElementName=UI}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
+                </Grid>
+            </DockPanel>
+        </Grid>
+    </Grid>
+</views:ViewBase>
