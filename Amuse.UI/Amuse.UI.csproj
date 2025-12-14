@@ -18,12 +18,14 @@
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
-  <!--HostConfiguration-->
+  <!--HostConfiguration - Optimized for Performance-->
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="System.GC.Server" Value="true" />
     <RuntimeHostConfigurationOption Include="System.GC.Concurrent" Value="true" />
-    <RuntimeHostConfigurationOption Include="System.GC.LatencyMode" Value="1" />
+    <RuntimeHostConfigurationOption Include="System.GC.LatencyMode" Value="0" />
     <RuntimeHostConfigurationOption Include="System.GC.LargeObjectHeapCompactionMode" Value="2" />
+    <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MinThreads" Value="16" />
+    <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.MaxThreads" Value="64" />
   </ItemGroup>
 
 
