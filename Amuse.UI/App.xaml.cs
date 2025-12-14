@@ -1,4 +1,4 @@
-﻿using Amuse.UI.Commands;
+using Amuse.UI.Commands;
 using Amuse.UI.Dialogs;
 using Amuse.UI.Enums;
 using Amuse.UI.Exceptions;
@@ -178,6 +178,10 @@ namespace Amuse.UI
             builder.Services.AddSingleton<IHardwareService, HardwareService>();
             builder.Services.AddSingleton<IProviderService, ProviderService>();
 
+            // Safety Toggle Services
+            builder.Services.AddSingleton<SafetyResolver>();
+            builder.Services.AddSingleton<SafetyCheckerInitializer>();
+
             // Build App
             _applicationHost = builder.Build();
         }
@@ -214,6 +218,13 @@ namespace Amuse.UI
             {
                 _logger.LogInformation("[OnStartup] - ApplicationHost Starting...");
                 await _applicationHost.StartAsync();
+
+                // Initialize Safety Checker (with toggle support)
+                var safetyInitializer = GetService<SafetyCheckerInitializer>();
+                if (!safetyInitializer.TryInitialize(Environment.GetCommandLineArgs()))
+                {
+                    _logger.LogWarning("[OnStartup] - Safety checker initialization failed, but continuing...");
+                }
 
                 // Load Config
                 _logger.LogInformation("[OnStartup] - Loading Configuration...");
@@ -501,3 +512,4 @@ namespace Amuse.UI
         #endregion
     }
 }
+
